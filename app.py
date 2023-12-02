@@ -1,4 +1,5 @@
 import mysql.connector as SQL
+import re
 from flask import Flask, render_template, flash, redirect, url_for, request, session
 from flask_session import Session
 from functions import login_required
