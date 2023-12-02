@@ -1,6 +1,7 @@
 import mysql.connector as SQL
 from flask import Flask, render_template, flash, redirect, url_for, request, session
 from flask_session import Session
+from functions import login_required
 
 # Configure application
 app = Flask(__name__)
@@ -17,3 +18,14 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
+@app.route("/")
+@login_required
+def index():
+    """Show EcoLogic's homepage"""
+    return render_template("index.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Log user in"""
+    pass
