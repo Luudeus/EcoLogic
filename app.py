@@ -1,5 +1,7 @@
 import mysql.connector as SQL
 import re
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, flash, redirect, url_for, request, session
 from flask_session import Session
 from functions import login_required
@@ -13,12 +15,15 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+# Load environment variables from .env
+load_dotenv()
+
 # Configure mysql.connector library to use MySQL database
 db = SQL.connect(
-    host="localhost",
-    user="user",
-    password="password",
-    database="database"
+    host=os.getenv("DB_HOST"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
+    database=os.getenv("DB_NAME")
 )
 
 @app.after_request
