@@ -46,12 +46,12 @@ def login():
     if request.method == "POST":
         # Ensure username was submitted
         if not request.form.get("username"):
-            flash("Must provide username", "warning")
+            flash("Se debe ingresar el usuario", "warning")
             return render_template("login.html")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            flash("Must provide password", "warning")
+            flash("Se debe ingresar la contraseña", "warning")
             return render_template("login.html")
 
         # Query database for username
@@ -63,7 +63,7 @@ def login():
         if len(rows) != 1 or not check_password_hash(
             rows[0]["hash"], request.form.get("password")
         ):
-            flash("Invalid username and/or password", "warning")
+            flash("Usuario y/o contraseña inválidos", "warning")
             return render_template("login.html")
 
         # Remember which user has logged in
@@ -85,22 +85,22 @@ def register():
     else:
         # Ensure username was submitted
         if not request.form.get("username"):
-            flash("Must provide username", "warning")
+            flash("Se debe ingresar el usuario", "warning")
             return render_template("register.html")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            flash("Must provide password", "warning")
+            flash("Se debe ingresar la contraseña", "warning")
             return render_template("register.html")
 
         # Ensure confirmation password was submitted
         elif not request.form.get("confirmation"):
-            flash("Must re-enter password", "warning")
+            flash("Se debe re-ingresar la contraseña", "warning")
             return render_template("register.html")
 
         # Check if passwords match
         if request.form.get("password") != request.form.get("confirmation"):
-            flash("Password and confirmation password don't match", "warning")
+            flash("La contraseña y la contraseña de confirmación no coinciden", "warning")
             return render_template("register.html")
 
         # Ensure password has at least two digits and three letters
@@ -109,7 +109,7 @@ def register():
         letters = re.findall(r"[A-Za-z]", password)
 
         if not (len(digits) >= 2 and len(letters) >= 3):
-            flash("Password must contain at least 3 letters and 2 digits", "warning")
+            flash("La contraseña debe contener al menos 3 letras y 2 dígitos", "warning")
             return render_template("register.html")
 
         # Check is username's is available
@@ -117,7 +117,7 @@ def register():
             "SELECT * FROM users WHERE username = ?", request.form.get("username")
         )
         if len(rows) != 0:
-            flash("Username already exists", "warning")
+            flash("El usuario ya existe", "warning")
             return render_template("register.html")
 
         # Insert the user into the users table
