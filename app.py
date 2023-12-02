@@ -74,3 +74,56 @@ def login():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
+    
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user"""
+    if request.method == "GET":
+        return render_template("register.html")
+    else:
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            flash("Must provide username", "warning")
+            return render_template("register.html")
+
+        # Ensure password was submitted
+        elif not request.form.get("password"):
+            flash("Must provide password", "warning")
+            return render_template("register.html")
+
+        # Ensure confirmation password was submitted
+        elif not request.form.get("confirmation"):
+            flash("Must re-enter password", "warning")
+            return render_template("register.html")
+
+        # Check if passwords match
+        if request.form.get("password") != request.form.get("confirmation"):
+            flash("Password and confirmation password don't match", "warning")
+            return render_template("register.html")
+
+        # Ensure password has at least two digits and three letters
+        password = request.form.get("password")
+        digits = re.findall(r"\d", password)
+        letters = re.findall(r"[A-Za-z]", password)
+
+        if not (len(digits) >= 2 and len(letters) >= 3):
+            flash("Password must contain at least 3 letters and 2 digits", "warning")
+            return render_template("register.html")
+
+        # Check is username's is available
+        rows = db.execute(
+            "SELECT * FROM users WHERE username = ?", request.form.get("username")
+        )
+        if len(rows) != 0:
+            flash("Username already exists", "warning")
+            return render_template("register.html")
+
+        # Insert the user into the users table
+        db.execute(
+            "INSERT INTO users (username, hash) VALUES (?, ?)",
+            request.form.get("username"),
+            generate_password_hash(request.form.get("password")),
+        )
+
+        return redirect("/")
