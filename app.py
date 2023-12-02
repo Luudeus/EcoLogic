@@ -2,6 +2,7 @@ import mysql.connector as SQL
 from flask import Flask, render_template, flash, redirect, url_for, request, session
 from flask_session import Session
 from functions import login_required
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # Configure application
 app = Flask(__name__)
@@ -28,4 +29,9 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
-    pass
+    
+    # Forget any user_id
+    session.clear()
+    
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
