@@ -19,12 +19,16 @@ Session(app)
 load_dotenv()
 
 # Configure mysql.connector library to use MySQL database
-db = SQL.connect(
-    host=os.getenv("DB_HOST"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASS"),
-    database=os.getenv("DB_NAME")
-)
+try:
+    db = SQL.connect(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASS"),
+        database=os.getenv("DB_NAME")
+    )
+    print("Database connection established.")
+except SQL.Error as e:
+    print("Error connecting to MySQL:", e)
 
 @app.after_request
 def after_request(response):
