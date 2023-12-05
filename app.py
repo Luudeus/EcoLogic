@@ -186,7 +186,7 @@ def biblioteca():
         # Connect to the database and fetch initial set of books
         cursor = db.cursor(dictionary=True)
         try:
-            cursor.execute("SELECT * FROM books")
+            cursor.execute("SELECT * FROM Book")
             initial_books = cursor.fetchall()
         finally:
             cursor.close()
@@ -202,15 +202,15 @@ def biblioteca():
     cursor = db.cursor(dictionary=True)
     try:
         if filter_type == 'titulo':
-            cursor.execute("SELECT * FROM books WHERE title LIKE %s", ('%' + query + '%',))
+            cursor.execute("SELECT * FROM Book WHERE titulo LIKE %s", ('%' + query + '%',))
         elif filter_type == 'autor':
-            cursor.execute("SELECT * FROM books WHERE author LIKE %s", ('%' + query + '%',))
+            cursor.execute("SELECT * FROM Book WHERE autor LIKE %s", ('%' + query + '%',))
         elif filter_type == 'anio':
-            cursor.execute("SELECT * FROM books WHERE year = %s", (query,))
+            cursor.execute("SELECT * FROM Book WHERE anio = %s", (query,))
         elif filter_type == 'genero':
-            cursor.execute("SELECT * FROM books WHERE genre LIKE %s", ('%' + query + '%',))
+            cursor.execute("SELECT * FROM Book WHERE genero LIKE %s", ('%' + query + '%',))
         else:
-            cursor.execute("SELECT * FROM books WHERE title LIKE %s OR author LIKE %s", ('%' + query + '%', '%' + query + '%'))
+            cursor.execute("SELECT * FROM Book WHERE title LIKE %s OR author LIKE %s", ('%' + query + '%', '%' + query + '%'))
 
         books = cursor.fetchall()
     finally:
