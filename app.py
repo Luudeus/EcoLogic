@@ -2,7 +2,7 @@ import mysql.connector as SQL
 import re
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, flash, redirect, url_for, request, session
+from flask import Flask, render_template, flash, redirect, jsonify, url_for, request, session
 from flask_session import Session
 from functions import login_required
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -37,7 +37,7 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
-    """Show EcoLogic's homepage"""
+    """Show FuturaLib's homepage"""
     return render_template("index.html")
 
 @app.route("/login", methods=["GET", "POST"])
@@ -49,9 +49,9 @@ def login():
     
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            flash("Se debe ingresar el usuario", "warning")
+        # Ensure rut was submitted
+        if not request.form.get("rut"):
+            flash("Se debe ingresar el RUT", "warning")
             return render_template("login.html")
 
         # Ensure password was submitted
@@ -59,21 +59,31 @@ def login():
             flash("Se debe ingresar la contraseña", "warning")
             return render_template("login.html")
 
-        # Query database for username
-        rows = db.execute(
-            "SELECT * FROM users WHERE username = ?", request.form.get("username")
-        )
+        # Procesa el RUT para eliminar puntos y guión
+        rut = request.form.get("rut").replace(".", "").replace("-", "")
 
-        # Ensure username exists and password is correct
+         # Create a new database cursor
+        cursor = db.cursor(dictionary=True)
+
+        # Query database for rut
+        cursor.execute(
+            "SELECT * FROM User WHERE RUT = %s", (rut,)
+        )
+        rows = cursor.fetchall()
+
+        # Ensure rut exists and password is correct
         if len(rows) != 1 or not check_password_hash(
-            rows[0]["hash"], request.form.get("password")
+            rows[0]["contrasenia"], request.form.get("password")
         ):
-            flash("Usuario y/o contraseña inválidos", "warning")
+            flash("RUT y/o contraseña inválidos", "warning")
             return render_template("login.html")
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = rows[0]["RUT"]
 
+        # Close the db cursor
+        cursor.close()
+        
         # Redirect user to home page
         return redirect("/")
 
@@ -88,11 +98,21 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
     else:
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            flash("Se debe ingresar el usuario", "warning")
+        # Ensure rut was submitted
+        if not request.form.get("rut"):
+            flash("Se debe ingresar el RUT", "warning")
             return render_template("register.html")
-
+        
+        # Ensure name was submitted
+        elif not request.form.get("name"):
+            flash("Se debe ingresar el nombre", "warning")
+            return render_template("register.html")
+        
+        # Ensure mail was submitted
+        elif not request.form.get("mail"):
+            flash("Se debe ingresar el correo", "warning")
+            return render_template("register.html")
+        
         # Ensure password was submitted
         elif not request.form.get("password"):
             flash("Se debe ingresar la contraseña", "warning")
@@ -116,20 +136,76 @@ def register():
         if not (len(digits) >= 2 and len(letters) >= 3):
             flash("La contraseña debe contener al menos 3 letras y 2 dígitos", "warning")
             return render_template("register.html")
+        
+        # Format RUT to delete dots and hyphens
+        rut = request.form.get("rut").replace(".", "").replace("-", "")
 
-        # Check is username's is available
-        rows = db.execute(
-            "SELECT * FROM users WHERE username = ?", request.form.get("username")
-        )
-        if len(rows) != 0:
-            flash("El usuario ya existe", "warning")
-            return render_template("register.html")
+        # Check if rut is available
+        cursor = db.cursor(dictionary=True)
+        try:
+            cursor.execute(
+                "SELECT * FROM User WHERE RUT = %s", (rut,)
+            )
+            rows = cursor.fetchall()
+            if len(rows) > 0:
+                flash("El usuario ya existe", "warning")
+                return render_template("register.html")
+        finally:
+            cursor.close()
 
         # Insert the user into the users table
-        db.execute(
-            "INSERT INTO users (username, hash) VALUES (?, ?)",
-            request.form.get("username"),
-            generate_password_hash(request.form.get("password")),
-        )
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
+                (rut, request.form.get("name"), request.form.get("mail"), "normal", generate_password_hash(request.form.get("password"))),
+            )
+            db.commit()
+        except Exception as e:
+            # Handle the exception
+            flash("Error al registrar el usuario", "warning")
+            return render_template("register.html")
+        finally:
+            cursor.close()
 
         return redirect("/")
+    
+    
+@app.route("/biblioteca", methods=['GET', 'POST'])
+def biblioteca():
+    """
+    Handle requests to the library page. 
+    On GET request, render the library page.
+    On POST request, perform book search and filtering.
+    """
+    if request.method == 'GET':
+        # Render the library page template on GET request
+        return render_template('biblioteca.html')
+
+    # Retrieve query parameters for search and filtering
+    query = request.args.get('query', '')
+    filter_type = request.args.get('filter', 'all')
+
+    # Connect to the database and execute the query based on the filter type
+    cursor = db.cursor(dictionary=True)
+    try:
+        if filter_type == 'titulo':
+            cursor.execute("SELECT * FROM books WHERE title LIKE %s", ('%' + query + '%',))
+        elif filter_type == 'autor':
+            cursor.execute("SELECT * FROM books WHERE author LIKE %s", ('%' + query + '%',))
+        elif filter_type == 'anio':
+            cursor.execute("SELECT * FROM books WHERE year = %s", (query,))
+        elif filter_type == 'genero':
+            cursor.execute("SELECT * FROM books WHERE genre LIKE %s", ('%' + query + '%',))
+        else:
+            cursor.execute("SELECT * FROM books WHERE title LIKE %s OR author LIKE %s", ('%' + query + '%', '%' + query + '%'))
+
+        books = cursor.fetchall()
+    finally:
+        cursor.close()
+
+    # Send the results back in JSON format
+    return jsonify({"books": books})
+
+if __name__ == "__main__":
+    app.run(debug=True)
