@@ -183,8 +183,16 @@ def biblioteca():
     On POST request, perform book search and filtering.
     """
     if request.method == 'GET':
-        # Render the library page template on GET request
-        return render_template('biblioteca.html')
+        # Connect to the database and fetch initial set of books
+        cursor = db.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT * FROM books")
+            initial_books = cursor.fetchall()
+        finally:
+            cursor.close()
+
+        # Render the library page template with initial books
+        return render_template('biblioteca.html', books=initial_books)
 
     # Retrieve query parameters for search and filtering
     query = request.args.get('query', '')
