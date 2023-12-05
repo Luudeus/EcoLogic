@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Biblioteca
+{% endblock %}
+
+{% block main %}
+<div class="container mt-4">
+    <!-- Search and filter section -->
+    <div class="row mb-3">
+        <div class="col">
+            <input type="text" class="form-control" id="search-input" placeholder="Buscar libros...">
+        </div>
+        <div class="col-auto">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Filtros
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item" href="#">Título</a></li>
+                    <li><a class="dropdown-item" href="#">Autor</a></li>
+                    <!-- Add other filters as needed -->
+                </ul>
+            </div>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" type="button" id="search-button">Buscar</button>
+        </div>
+    </div>
+
+    <!-- Table of books -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Título</th>
+                <th scope="col">Autor</th>
+                <th scope="col">Año</th>
+                <th scope="col">Género</th>
+                <th scope="col">Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamically load book entries here using a loop -->
+            {% for book in books %}
+            <tr>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.year }}</td>
+                <td>{{ book.genre }}</td>
+                <td>{{ book.stock }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination buttons -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <!-- Dynamically create page number buttons -->
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
