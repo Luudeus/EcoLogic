@@ -11,7 +11,7 @@
     </div>
     <form action="/login" method="post">
         <div class="mb-3">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="rut" name="rut" placeholder="RUT" type="text">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="rut" name="rut" placeholder="RUT" type="text" maxlength="12">
         </div>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="Contraseña" type="password">
@@ -21,7 +21,8 @@
 
     <script>
         function formateaRut(rut) {
-            var actual = rut.replace(/^0+/, "");
+            var actual = rut.replace(/[^0-9kK]/g, "").replace(/k/g, "K");
+
             if (actual != '' && actual.length > 1) {
                 var sinPuntos = actual.replace(/\./g, "");
                 var actualLimpio = sinPuntos.replace(/-/g, "");
@@ -39,9 +40,9 @@
                 }
                 var dv = actualLimpio.substring(actualLimpio.length - 1);
                 rutPuntos = rutPuntos + "-" + dv;
-                return rutPuntos;
+                return rutPuntos.substr(0, 12); // Asegurarse de que el RUT no exceda los 12 caracteres
             }
-            return rut; // Retorna el RUT original si no es lo suficientemente largo
+            return actual; // Retorna el RUT procesado si no es lo suficientemente largo
         }
 
         document.getElementById('rut').addEventListener('input', function() {
