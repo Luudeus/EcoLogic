@@ -5,6 +5,10 @@
 {% endblock %}
 
 {% block main %}
+    <div class="text-center mb-4">
+        <span>No tienes cuenta? </span>
+        <a href="/register" class="text-primary">Regístrate aquí</a>
+    </div>
     <form action="/login" method="post">
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="Usuario" type="text">
