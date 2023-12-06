@@ -214,17 +214,17 @@ def logout():
 
 @app.route("/biblioteca", methods=["GET"])
 def biblioteca():
-    order = request.args.get("o", default="title")
+    order = request.args.get("o", default="titulo")
     direction = request.args.get("d", default="ASC").upper()
 
     cursor = mysql.connection.cursor()
-    valid_columns = ["title", "author", "year", "genre", "stock"]
+    valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
     if order in valid_columns and direction in ["ASC", "DESC"]:
         # Construct the SQL query ensuring the 'order' value is safe
         query = f"SELECT * FROM Book ORDER BY {order} {direction}"
     else:
         # Default ordering if the parameters are not valid
-        query = "SELECT * FROM Book ORDER BY title ASC"
+        query = "SELECT * FROM Book ORDER BY titulo ASC"
 
     cursor.execute(query)
     books = cursor.fetchall()
