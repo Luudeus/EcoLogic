@@ -22,12 +22,12 @@ Registrar Libro
         </div>
         <div class="mb-3">
             <label for="selectGenre" class="form-label">Género del Libro</label>
-            <input name="genre" list="genres" placeholder="Género del Libro" class="form-select" id="selectGenre" required>
-            <datalist id="genres">
-                <option value="Novela">
-                <option value="Poesía">
+            <select class="form-select" id="selectGenre" required>
+                <option disabled selected>Seleccione...</option>
+                <option value="novela">Novela</option>
+                <option value="poesia">Poesía</option>
                 <!-- Más opciones aquí -->
-            </datalist>
+            </select>
         </div>
         <div class="mb-3">
             <label for="inputStock" class="form-label">Stock</label>
