@@ -2,7 +2,7 @@ import re
 from werkzeug.security import generate_password_hash
 
 
-def validate_user_input(
+def validate_register_input(
     rut=None, name=None, mail=None, password=None, confirmation=None
 ):
     """Validate user input for registration.

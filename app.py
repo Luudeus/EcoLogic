@@ -2,6 +2,7 @@ from flask_mysqldb import MySQL
 import re
 import os
 from user_validation.user_data_format import *
+from user_validation.user_login_validator import *
 from user_validation.user_register_validator import *
 from dotenv import load_dotenv
 from flask import (
@@ -76,7 +77,7 @@ def login():
         password = request.form.get("password")
 
         # Ensure both RUT and password were submitted
-        errors = validate_user_input(rut, password)
+        errors = validate_login_input(rut, password)
         if errors:
             for error in errors:
                 flash(error, "warning")
@@ -128,7 +129,7 @@ def register():
         confirmation = request.form.get("confirmation")
 
         # Validate user's entries
-        errors = validate_user_input(rut, name, mail, password, confirmation)
+        errors = validate_register_input(rut, name, mail, password, confirmation)
         if errors:
             for error in errors:
                 flash(error, "warning")

@@ -1,4 +1,4 @@
-def validate_user_input(rut=None, password=None):
+def validate_login_input(rut=None, password=None):
     """Validate user input for login.
 
     Args:
