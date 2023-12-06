@@ -74,8 +74,8 @@ def login():
             flash("Se debe ingresar la contraseña", "warning")
             return render_template("login.html")
 
-        # Procesa el RUT para eliminar puntos y guión
-        rut = request.form.get("rut").replace(".", "").replace("-", "")
+        # Format RUT to delete spaces and hyphens
+        rut = format_rut(request.form.get("rut"))
 
         # Create a new database cursor
         cursor = mysql.connection.cursor()
