@@ -65,18 +65,23 @@ def login():
     # Forget any user_id
     session.clear()
 
+    if request.method == "GET":
+        # User reached route via GET (as by clicking a link or via redirect)
+        return render_template("register.html")
+    
     # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        # Ensure rut was submitted
-        if not request.form.get("rut"):
-            flash("Se debe ingresar el RUT", "warning")
-            return render_template("login.html")
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            flash("Se debe ingresar la contraseña", "warning")
-            return render_template("login.html")
-
+    else:
+        # Get form data
+        rut = request.form.get("rut")
+        password = request.form.get("password")
+        
+        # Ensure both RUT and password were submitted
+        errors = validate_user_input(rut, password)
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return render_template("register.html")
+        
         # Format RUT to delete spaces and hyphens
         rut = format_rut(request.form.get("rut"))
 
@@ -105,10 +110,6 @@ def login():
 
         # Redirect user to home page
         return redirect("/")
-
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("login.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
