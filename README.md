@@ -1,6 +1,6 @@
 # Instrucciones:
 ### Requerimientos
-- Para instalar todas las librerías necesarias, usar `pip install -r requirements.txt`
+- Para instalar todas las librerías necesarias, una vez en el directorio del proyecto, usar `pip install -r requirements.txt`
 ### Cómo correr la página de forma local
 - Usar `python -m flask run` para echar a correr flask
 ### Cómo ingresar las credenciales de la base de datos
