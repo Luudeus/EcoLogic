@@ -169,7 +169,7 @@ def register():
             cursor.close()
             
         flash("Usuario creado correctamente", "success")
-        return redirect("/")
+        return render_template("login.html")
     
     
 @app.route("/biblioteca", methods=['GET', 'POST'])
@@ -185,6 +185,10 @@ def biblioteca():
         try:
             cursor.execute("SELECT * FROM Book")
             initial_books = cursor.fetchall()
+            print(initial_books)
+        except Exception as e:
+            # Handle the exception
+            print("Error al intentar cargar los libros:", e)
         finally:
             cursor.close()
 
