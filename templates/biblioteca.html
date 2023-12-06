@@ -6,33 +6,38 @@ Biblioteca
 
 {% block main %}
 <div class="container mt-4">
-    <!-- Search and filter section -->
-    <div class="row mb-3 align-items-center">
-        <div class="col">
-            <input type="text" class="form-control" id="search-input" placeholder="Buscar libros...">
+<!-- Search and filter section -->
+<div class="row mb-3 align-items-center">
+    <form method="POST" action="/biblioteca" class="col">
+        <div class="row g-3 align-items-center">
+            <div class="col">
+                <input type="text" class="form-control" id="search-input" name="busqueda" placeholder="Buscar libros...">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+            <div class="col-auto" style="color: #007bff">
+                <span>Ordenar por</span>
+            </div>
+            <div class="col-auto">
+                <select class="form-select" id="orderSelect" onchange="applyOrder()">
+                    <option value="titulo" selected>Título</option>
+                    <option value="autor">Autor</option>
+                    <option value="anio">Año</option>
+                    <option value="genero">Género</option>
+                    <option value="stock">Stock</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <select class="form-select" id="directionSelect" onchange="applyOrder()">
+                    <option value="ASC" selected>Ascendente</option>
+                    <option value="DESC">Descendente</option>
+                </select>
+            </div>
         </div>
-        <div class="col-auto">
-            <button class="btn btn-primary" type="button" id="search-button" onclick="searchBooks()">Buscar</button>
-        </div>
-        <div class="col-auto" style="color: #007bff">
-            <span>Ordenar por</span>
-        </div>
-        <div class="col-auto">
-            <select class="form-select" id="orderSelect" onchange="applyOrder()">
-                <option value="titulo" selected>Título</option>
-                <option value="autor">Autor</option>
-                <option value="anio">Año</option>
-                <option value="genero">Género</option>
-                <option value="stock">Stock</option>
-            </select>
-        </div>
-        <div class="col-auto">
-            <select class="form-select" id="directionSelect" onchange="applyOrder()">
-                <option value="ASC" selected>Ascendente</option>
-                <option value="DESC">Descendente</option>
-            </select>
-        </div>
-    </div>
+    </form>
+</div>
+
 
     <!-- Table of books -->
     <div class="table-responsive">

@@ -218,30 +218,47 @@ def quienes_somos():
     return render_template("quienes-somos.html")
     
 
-@app.route("/biblioteca", methods=["GET"])
+@app.route("/biblioteca", methods=["GET", "POST"])
 def biblioteca():
-    order = request.args.get("o", default="titulo")
-    direction = request.args.get("d", default="ASC").upper()
+    if request.method == "GET":
+        order = request.args.get("o", default="titulo")
+        direction = request.args.get("d", default="ASC").upper()
 
-    cursor = mysql.connection.cursor()
-    valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
-    if order in valid_columns and direction in ["ASC", "DESC"]:
-        # Construct the SQL query ensuring the 'order' value is safe
-        query = f"SELECT * FROM Book ORDER BY {order} {direction}"
+        cursor = mysql.connection.cursor()
+        valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
+        if order in valid_columns and direction in ["ASC", "DESC"]:
+            # Construct the SQL query ensuring the 'order' value is safe
+            query = f"SELECT * FROM Book ORDER BY {order} {direction}"
+        else:
+            # Default ordering if the parameters are not valid
+            query = "SELECT * FROM Book ORDER BY titulo ASC"
+
+        cursor.execute(query)
+        books = cursor.fetchall()
+        cursor.close()
+
+        # If the request is AJAX, then return JSON
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"books": books})
+
+        # Otherwise, render the page with the books
+        return render_template("biblioteca.html", books=books)
     else:
-        # Default ordering if the parameters are not valid
-        query = "SELECT * FROM Book ORDER BY titulo ASC"
+        # SELECT * FROM Book WHERE titulo LIKE %s
+        busqueda = request.form.get("busqueda")
+        
+        cursor = mysql.connection.cursor()
+        try:
+            cursor.execute("SELECT * FROM Book WHERE titulo LIKE %s", (f"%{busqueda}%",))
 
-    cursor.execute(query)
-    books = cursor.fetchall()
-    cursor.close()
-
-    # If the request is AJAX, then return JSON
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"books": books})
-
-    # Otherwise, render the page with the books
-    return render_template("biblioteca.html", books=books)
+        except Exception as e:
+            print("No se pudo hacer la búsqueda:", e)
+        books = cursor.fetchall()
+        books = list(books)
+        
+        cursor.close()
+        # Render the page with the books
+        return render_template("biblioteca.html", books=books)
 
 
 @app.route("/agregar-libros", methods=["GET", "POST"])
