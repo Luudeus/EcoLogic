@@ -93,6 +93,9 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["RUT"]
+        
+        # Remember permission type of the user
+        session["permission_type"] = rows[0]["permisos"]
 
         # Close the db cursor
         cursor.close()
