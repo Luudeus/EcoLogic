@@ -155,7 +155,7 @@ def register():
             return render_template("register.html")
 
         # Format RUT, mail, and name
-        rut, mail, name = format_rut(
+        rut, mail, name = format_data(
             request.form.get("rut"), request.form.get("mail"), request.form.get("name")
         )
 
