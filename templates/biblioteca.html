@@ -168,10 +168,16 @@ Biblioteca
     function updatePagination(totalPages, currentPage) {
         const paginationContainer = document.querySelector('.pagination');
         paginationContainer.innerHTML = '';  // Clear existing pagination buttons
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchTerm = urlParams.get('search') || '';
+        const order = urlParams.get('o') || 'titulo';
+        const direction = urlParams.get('d') || 'ASC';
     
         for (let i = 1; i <= totalPages; i++) {
             const pageLink = document.createElement('a');
-            pageLink.href = `?page=${i}`;  // or however you construct your links
+            // Include current search and order parameters in the pagination links
+            pageLink.href = `?search=${encodeURIComponent(searchTerm)}&o=${encodeURIComponent(order)}&d=${encodeURIComponent(direction)}&page=${i}`;
             pageLink.innerText = i;
             pageLink.className = 'page-link';
             if (i === currentPage) {
