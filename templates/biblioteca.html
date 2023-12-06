@@ -7,27 +7,26 @@ Biblioteca
 {% block main %}
 <div class="container mt-4">
     <!-- Search and filter section -->
-    <div class="row mb-3">
+    <div class="row mb-3 align-items-center">
         <div class="col">
             <input type="text" class="form-control" id="search-input" placeholder="Buscar libros...">
         </div>
         <div class="col-auto">
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    Filtros
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                    <li><a class="dropdown-item" href="#" onclick="applyFilter('titulo')">Título</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="applyFilter('autor')">Autor</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="applyFilter('anio')">Año</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="applyFilter('genero')">Género</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="col-auto">
             <button class="btn btn-primary" type="button" id="search-button" onclick="searchBooks()">Buscar</button>
         </div>
+        <div class="col-auto" style="color: #007bff">
+            <span>Ordenar por</span>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" id="orderSelect" onchange="applyOrder()">
+                <option value="titulo" selected>Título</option>
+                <option value="autor">Autor</option>
+                <option value="anio">Año</option>
+                <option value="genero">Género</option>
+            </select>
+        </div>
     </div>
+
 
     <!-- Table of books -->
     <div class="table-responsive">
@@ -58,23 +57,11 @@ Biblioteca
 </div>
 
 <script>
-    function searchBooks() {
-        var searchText = document.getElementById("search-input").value;
-        fetch("/biblioteca?query=" + encodeURIComponent(searchText))
-            .then(response => response.json())
-            .then(data => {
-                updateTable(data.books);
-            });
-    }
-
-    function applyFilter(filterType) {
-        var searchText = document.getElementById("search-input").value;
-        fetch("/biblioteca?query=" + encodeURIComponent(searchText) + "&filter=" + filterType)
-            .then(response => response.json())
-            .then(data => {
-                updateTable(data.books);
-            });
-    }
+    // Load books when page is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Call updateTable initial books
+        updateTable({{ books|tojson }});
+    });
 
     function updateTable(books) {
         var tableBody = document.getElementById("books-table").getElementsByTagName("tbody")[0];
