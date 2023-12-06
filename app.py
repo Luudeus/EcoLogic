@@ -334,6 +334,11 @@ def agregar_libro():
         flash(f"Libro creado correctamente.\nTítulo: {titulo}\nAutor: {autor}\nAño: {anio}\nGénero: {genero}\nStock: {stock}", "success")
         return render_template("agregar-libros.html")
     
-    
+
+@app.route("/agregar-usuarios", methods=["GET", "POST"])
+def agregar_usuarios():
+    if request.method == "GET":
+        # User reached route via GET (as by clicking a link or via redirect)
+        return render_template("agregar-usuarios.html")    
 if __name__ == "__main__":
     app.run(debug=True)
