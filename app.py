@@ -183,9 +183,10 @@ def biblioteca():
         # Connect to the database and fetch initial set of books
         cursor = mysql.connection.cursor()
         try:
-            cursor.execute("SELECT * FROM Book")
+            cursor.execute("SELECT * FROM Book ORDER BY titulo")
             initial_books = cursor.fetchall()
-            print(initial_books)
+            # Convert tuple to a list
+            initial_books = list(initial_books)
         except Exception as e:
             # Handle the exception
             print("Error al intentar cargar los libros:", e)
