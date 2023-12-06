@@ -243,6 +243,47 @@ def agregar_libro():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("agregar-libros.html")
+    else:
+        if not request.form.get('titulo'):
+            flash("Se debe introducir título.\nTodos los campos son obligarios", "warning")
+            render_template("agregar-libros.html")
+        elif not request.form.get('autor'):
+            flash("Se debe introducir autor.\nTodos los campos son obligarios", "warning")
+            render_template("agregar-libros.html")
+        elif not request.form.get('anio'):
+            flash("Se debe introducir año.\nTodos los campos son obligarios", "warning")
+            render_template("agregar-libros.html")
+        elif not request.form.get('genero'):
+            flash("Se debe introducir género.\nTodos los campos son obligarios", "warning")
+            render_template("agregar-libros.html")
+        elif not request.form.get('stock'):
+            flash("Se debe introducir stock.\nTodos los campos son obligarios", "warning")
+            render_template("agregar-libros.html")
+        # User reached route via POST (as by submitting a form)
+        titulo = request.form.get('titulo')
+        autor = request.form.get('autor')
+        anio = request.form.get('anio')
+        genero = request.form.get('genero')
+        stock = request.form.get('stock')
+        print(titulo, autor, anio, genero, stock)
+        
+        cursor = mysql.connection.cursor()
+        try:
+            # Asegúrate de que los nombres de las columnas en la consulta coincidan con tu esquema de DB
+            query = "INSERT INTO Book (titulo, autor, anio, genero, stock) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(query, (titulo, autor, anio, genero, stock))
+        except Exception as e:
+            print("No se pudo registrar el libro:", e)
+            flash("No se pudo registrar el libro.", "warning")
+            return render_template("agregar-libros.html")
+            
+        
+        mysql.connection.commit()
+        cursor.close()
+        
+        # Flash book creation success
+        flash(f"Libro creado correctamente.\nTítulo: {titulo}\nAutor: {autor}\nAño: {anio}\nGénero: {genero}\nStock: {stock}", "success")
+        return render_template("agregar-libros.html")
     
     
 if __name__ == "__main__":
