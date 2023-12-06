@@ -1,7 +1,7 @@
 # Instrucciones:
 ### Requerimientos
 - Para instalar todas las librerías necesarias, una vez en el directorio del proyecto, usar `pip install -r requirements.txt`
-- Para la base de datos, abrir el archivo SGDB_script.sql (/SGDB_script.sql) en MySQL Workbench, y luego darle al rayo.
+- Para la base de datos, abrir el archivo SGDB_script.sql [database](/SGDB_script.sql) en MySQL Workbench, y luego darle al rayo.
 ### Cómo correr la página de forma local
 - Usar `python -m flask run` para echar a correr flask
 ### Cómo ingresar las credenciales de la base de datos
