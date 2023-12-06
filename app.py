@@ -68,20 +68,20 @@ def login():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("register.html")
-    
+
     # User reached route via POST (as by submitting a form via POST)
     else:
         # Get form data
         rut = request.form.get("rut")
         password = request.form.get("password")
-        
+
         # Ensure both RUT and password were submitted
         errors = validate_user_input(rut, password)
         if errors:
             for error in errors:
                 flash(error, "warning")
             return render_template("register.html")
-        
+
         # Format RUT to delete spaces and hyphens
         rut = format_rut(request.form.get("rut"))
 
