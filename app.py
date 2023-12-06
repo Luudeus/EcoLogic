@@ -238,5 +238,12 @@ def biblioteca():
     return render_template("biblioteca.html", books=books)
 
 
+@app.route("/agregar-libro", methods=["GET", "POST"])
+def agregar_libro():
+    if request.method == "GET":
+        # User reached route via GET (as by clicking a link or via redirect)
+        return render_template("agregar-libro.html")
+    
+    
 if __name__ == "__main__":
     app.run(debug=True)
