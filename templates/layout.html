@@ -36,7 +36,7 @@
                         <li class="nav-item"><a class="nav-link" href="/biblioteca">Biblioteca</a></li>
                         {% if session["permission_type"] == "normal" %}
                             <li class="nav-item"><a class="nav-link" href="/prestamos">Préstamos</a></li>
-                        {% else if session["permission_type"] == "bibliotecario" %}
+                        {% elif session["permission_type"] == "bibliotecario" %}
                             <li class="nav-item"><a class="nav-link" href="/agregar-libros">Agregar Libros</a></li>
                             <li class="nav-item"><a class="nav-link" href="/editar-usuarios">Editar Usuarios</a></li>
                         {% endif %}
