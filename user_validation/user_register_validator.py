@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 
 
 def validate_register_input(
-    rut=None, name=None, mail=None, password=None, confirmation=None
+    rut=None, name=None, mail=None, password=None, confirmation=None, permission=None
 ):
     """Validate user input for registration.
 
@@ -44,6 +44,11 @@ def validate_register_input(
     if not is_password_complex(password):
         errors.append("La contraseña debe contener al menos 3 letras y 2 dígitos")
 
+    # Check if permission is correct
+    if permission:
+        if not is_permission_valid(permission):
+            errors.append("Tipo de permiso inválido")
+            
     return errors
 
 
@@ -88,6 +93,20 @@ def is_email_complex(email):
         return False
 
     return True
+
+
+def is_permission_valid(permission):
+    """Check if the permission is in the list of permissions.
+
+    Args:
+        permission (str): The user's permissions type.
+
+    Returns:
+        bool: True if the permission is in permissions list, False otherwise.
+
+    """
+    permissions = ["normal", "bibliotecario"]
+    return permission in permissions
 
 
 def passwords_match(password, confirmation):

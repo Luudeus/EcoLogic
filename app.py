@@ -325,6 +325,67 @@ def agregar_usuarios():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("agregar-usuarios.html")
+    else:
+        # Get form data
+        rut = request.form.get("rut")
+        name = request.form.get("name")
+        mail = request.form.get("mail")
+        permission = request.form.get("permisos")
+        password = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+
+        # Validate user's entries
+        errors = validate_register_input(
+            rut, name, mail, password, confirmation, permission
+        )
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return render_template("register.html")
+
+        # Format RUT, mail and name
+        formatted_rut, formatted_mail, formatted_name = format_data(rut, mail, name)
+
+        # Check if rut is available
+        cursor = mysql.connection.cursor()
+
+        # Insert the user into the database
+        try:
+            cursor.execute("SELECT * FROM User WHERE RUT = %s", (rut,))
+            rows = cursor.fetchall()
+            if len(rows) > 0:
+                flash("El usuario ya existe", "warning")
+                return render_template("register.html")
+        finally:
+            cursor.close()
+
+        # Insert the user into the users table
+        try:
+            cursor = mysql.connection.cursor()
+            cursor.execute(
+                "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
+                (
+                    formatted_rut,
+                    formatted_name,
+                    formatted_mail,
+                    permission,
+                    hash_password(password),
+                ),
+            )
+            mysql.connection.commit()
+        except Exception as e:
+            # Handle the exception
+            print("Error al intentar registrar el usuario:", e)
+            flash("Error al registrar el usuario", "warning")
+            return render_template("register.html")
+        finally:
+            cursor.close()
+
+        flash(
+            f"Usuario creado correctamente.\nRUT:{rut}\nNombre:{name}\nCorreo:{mail}\nPermisos:{permission}\nContraseña\n:{password}",
+            "success",
+        )
+        return render_template("login.html")
 
 
 if __name__ == "__main__":
