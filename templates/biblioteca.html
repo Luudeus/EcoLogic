@@ -26,8 +26,13 @@ Biblioteca
                 <option value="stock">Stock</option>
             </select>
         </div>
+        <div class="col-auto">
+            <select class="form-select" id="directionSelect" onchange="applyOrder()">
+                <option value="ASC" selected>Ascendente</option>
+                <option value="DESC">Descendente</option>
+            </select>
+        </div>
     </div>
-
 
     <!-- Table of books -->
     <div class="table-responsive">
@@ -80,12 +85,13 @@ Biblioteca
 
     function applyOrder() {
         var selectedOrder = document.getElementById("orderSelect").value;
+        var selectedDirection = document.getElementById("directionSelect").value;
         fetch("/biblioteca", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ order: selectedOrder })
+            body: JSON.stringify({ order: selectedOrder, direction: selectedDirection })
         })
         .then(response => response.json())
         .then(data => {
@@ -95,6 +101,7 @@ Biblioteca
             console.error('Error:', error);
         });
     }
+    
     
 </script>
 {% endblock %}

@@ -197,22 +197,21 @@ def biblioteca():
         return render_template('biblioteca.html', books=initial_books)
 
     else:
-        order = request.json.get('order')
         valid_columns = ['titulo', 'autor', 'anio', 'genero', 'stock']
-        if order in valid_columns:
+        data = request.json
+        order = data.get('order')
+        direction = data.get('direction', 'ASC')  # Order by ascendant by default
+        if order in valid_columns and direction in ['ASC', 'DESC']:
             cursor = mysql.connection.cursor()
-            query = f"SELECT * FROM Book ORDER BY {order}"  # Make sure 'order' is a safe value
-            try:
-                cursor.execute(query)
-                books = cursor.fetchall()
-                books = list(books)
-            except Exception as e:
-                return jsonify({'error': str(e)}), 500
-            finally:
-                cursor.close()
+            query = f"SELECT * FROM Book ORDER BY {order} {direction}"
+            cursor.execute(query)
+            books = cursor.fetchall()
+            books = list(books)
+            cursor.close()
             return jsonify({'books': books})
         else:
-            return jsonify({'error': 'Invalid order parameter'}), 400
+            # Handle invalid values
+            return jsonify({'error': 'Invalid order or direction parameter'}), 400
         
 
 if __name__ == "__main__":
