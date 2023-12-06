@@ -1,0 +1,1 @@
+Para instalar todas las librerías necesarias, usar `pip install -r requirements.txt`
