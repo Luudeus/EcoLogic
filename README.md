@@ -11,5 +11,5 @@ DB_USER={usuario}<br>
 DB_PASS={contraseña}<br>
 DB_NAME={nombre de la base de datos}<br>
 
-Imagen de ejemplo:<br>
+**Imagen de ejemplo:**<br>
 ![database_connection](/database.PNG)
