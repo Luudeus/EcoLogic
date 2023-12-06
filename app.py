@@ -1,6 +1,7 @@
 from flask_mysqldb import MySQL
 import re
 import os
+from validation.user_data_format import format_rut
 from dotenv import load_dotenv
 from flask import Flask, render_template, flash, redirect, jsonify, url_for, request, session
 from flask_session import Session
@@ -139,7 +140,7 @@ def register():
             return render_template("register.html")
         
         # Format RUT to delete dots and hyphens
-        rut = request.form.get("rut").replace(".", "").replace("-", "")
+        rut = format_rut(request.form.get("rut"))
 
         # Check if rut is available
         cursor = mysql.connection.cursor()
