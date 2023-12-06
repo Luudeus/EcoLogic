@@ -162,11 +162,13 @@ def register():
             mysql.connection.commit()
         except Exception as e:
             # Handle the exception
+            print("Error al intentar registrar el usuario:", e)
             flash("Error al registrar el usuario", "warning")
             return render_template("register.html")
         finally:
             cursor.close()
-
+            
+        flash("Usuario creado correctamente", "success")
         return redirect("/")
     
     
