@@ -1,5 +1,4 @@
 from flask_mysqldb import MySQL
-import re
 import os
 from user_validation.user_data_format import *
 from user_validation.user_login_validator import *
