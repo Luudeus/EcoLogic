@@ -214,27 +214,27 @@ def logout():
 
 @app.route("/biblioteca", methods=["GET"])
 def biblioteca():
-    order = request.args.get("o", default="titulo")
+    order = request.args.get("o", default="title")
     direction = request.args.get("d", default="ASC").upper()
 
     cursor = mysql.connection.cursor()
-    valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
+    valid_columns = ["title", "author", "year", "genre", "stock"]
     if order in valid_columns and direction in ["ASC", "DESC"]:
-        # Construir la consulta SQL asegurando que el valor de 'order' sea seguro
+        # Construct the SQL query ensuring the 'order' value is safe
         query = f"SELECT * FROM Book ORDER BY {order} {direction}"
     else:
-        # Ordenamiento predeterminado si los parámetros no son válidos
-        query = "SELECT * FROM Book ORDER BY titulo ASC"
+        # Default ordering if the parameters are not valid
+        query = "SELECT * FROM Book ORDER BY title ASC"
 
     cursor.execute(query)
     books = cursor.fetchall()
     cursor.close()
 
-    # Si la solicitud es AJAX, entonces devolvemos JSON
+    # If the request is AJAX, then return JSON
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({"books": books})
 
-    # Si no, renderizamos la página con los libros
+    # Otherwise, render the page with the books
     return render_template("biblioteca.html", books=books)
 
 
