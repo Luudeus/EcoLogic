@@ -196,30 +196,24 @@ def biblioteca():
         # Render the library page template with initial books
         return render_template('biblioteca.html', books=initial_books)
 
-    # Retrieve query parameters for search and filtering
-    query = request.args.get('query', '')
-    filter_type = request.args.get('filter', 'all')
-
-    # Connect to the database and execute the query based on the filter type
-    cursor = mysql.connection.cursor()
-    try:
-        if filter_type == 'titulo':
-            cursor.execute("SELECT * FROM Book WHERE titulo LIKE %s", ('%' + query + '%',))
-        elif filter_type == 'autor':
-            cursor.execute("SELECT * FROM Book WHERE autor LIKE %s", ('%' + query + '%',))
-        elif filter_type == 'anio':
-            cursor.execute("SELECT * FROM Book WHERE anio = %s", (query,))
-        elif filter_type == 'genero':
-            cursor.execute("SELECT * FROM Book WHERE genero LIKE %s", ('%' + query + '%',))
+    else:
+        order = request.json.get('order')
+        valid_columns = ['titulo', 'autor', 'anio', 'genero', 'stock']
+        if order in valid_columns:
+            cursor = mysql.connection.cursor()
+            query = f"SELECT * FROM Book ORDER BY {order}"  # Make sure 'order' is a safe value
+            try:
+                cursor.execute(query)
+                books = cursor.fetchall()
+                books = list(books)
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+            finally:
+                cursor.close()
+            return jsonify({'books': books})
         else:
-            cursor.execute("SELECT * FROM Book WHERE title LIKE %s OR author LIKE %s", ('%' + query + '%', '%' + query + '%'))
-
-        books = cursor.fetchall()
-    finally:
-        cursor.close()
-
-    # Send the results back in JSON format
-    return jsonify({"books": books})
+            return jsonify({'error': 'Invalid order parameter'}), 400
+        
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -23,6 +23,7 @@ Biblioteca
                 <option value="autor">Autor</option>
                 <option value="anio">Año</option>
                 <option value="genero">Género</option>
+                <option value="stock">Stock</option>
             </select>
         </div>
     </div>
@@ -76,5 +77,24 @@ Biblioteca
             row.insertCell(4).textContent = book.stock;
         });
     }
+
+    function applyOrder() {
+        var selectedOrder = document.getElementById("orderSelect").value;
+        fetch("/biblioteca", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ order: selectedOrder })
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.books);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
 </script>
 {% endblock %}
