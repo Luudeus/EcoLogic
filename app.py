@@ -212,6 +212,12 @@ def logout():
     return redirect("/")
 
 
+@app.route("/quienes-somos", methods=["GET"])
+def quienes_somos():
+    # User reached route via GET (as by clicking a link or via redirect)
+    return render_template("quienes-somos.html")
+    
+
 @app.route("/biblioteca", methods=["GET"])
 def biblioteca():
     order = request.args.get("o", default="titulo")
