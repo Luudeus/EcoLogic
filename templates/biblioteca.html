@@ -8,13 +8,16 @@ Biblioteca
 <div class="container mt-4">
 <!-- Search and filter section -->
 <div class="row mb-3 align-items-center">
-    <form method="POST" action="/biblioteca" class="col">
+    <form class="col">
         <div class="row g-3 align-items-center">
             <div class="col">
                 <input type="text" class="form-control" id="search-input" name="busqueda" placeholder="Buscar libros...">
             </div>
             <div class="col-auto">
-                <button class="btn btn-primary" type="submit">Buscar</button>
+                <button class="btn btn-primary" type="button" onclick="applySearch()">Buscar</button>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-secondary" type="button" onclick="clearSearch()">Limpiar</button>
             </div>
             <div class="col-auto" style="color: #007bff">
                 <span>Ordenar por</span>
@@ -74,6 +77,27 @@ Biblioteca
         updateTable({{ books|tojson }});
     });
 
+    function applySearch() {
+        var searchTerm = document.getElementById("search-input").value;
+        var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}`;
+
+        history.pushState(null, '', newUrl);
+
+        fetch(newUrl, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.books);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
     function updateTable(books) {
         var tableBody = document.getElementById("books-table").getElementsByTagName("tbody")[0];
         tableBody.innerHTML = "";
@@ -91,11 +115,18 @@ Biblioteca
     function applyOrder() {
         var selectedOrder = document.getElementById("orderSelect").value;
         var selectedDirection = document.getElementById("directionSelect").value;
-        var newUrl = `/biblioteca?o=${selectedOrder}&d=${selectedDirection}`;
-    
-        // Actualizar la URL en la barra de direcciones
+
+        // Get the current URL search term
+        var urlParams = new URLSearchParams(window.location.search);
+        var searchTerm = urlParams.get('search') || '';
+
+        // Build new URL including both and order parameters
+        var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
+
+        // Update URL
         history.pushState(null, '', newUrl);
-    
+
+        // Make the AJAX call
         fetch(newUrl, {
             method: 'GET',
             headers: {
@@ -110,8 +141,32 @@ Biblioteca
             console.error('Error:', error);
         });
     }
-         
+   
+    function clearSearch() {
+        var newUrl = `/biblioteca`;
     
+        history.pushState(null, '', newUrl);
+    
+        // Realizar la solicitud AJAX para recargar los datos
+        fetch(newUrl, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.books);
+            // Limpiar el campo de búsqueda
+            document.getElementById("search-input").value = "";
+            // Restablecer los selectores de ordenación a sus valores predeterminados
+            document.getElementById("orderSelect").value = "titulo";
+            document.getElementById("directionSelect").value = "ASC";
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
     
 </script>
 {% endblock %}
