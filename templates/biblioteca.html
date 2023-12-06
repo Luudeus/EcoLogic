@@ -69,7 +69,43 @@ Biblioteca
     document.addEventListener('DOMContentLoaded', function() {
         // Call updateTable initial books
         updateTable({{ books|tojson }});
+        // Add event listener to search bar
+        var searchInput = document.getElementById("search-input");
+        searchInput.addEventListener("keypress", function(event) {
+            // Check is key pressed is 'Enter'
+            if (event.key === "Enter") {
+                event.preventDefault(); // Avoid Enter default behaviors
+                applySearch(); // Call applySearch function
+            }
+        });
     });
+
+    document.addEventListener('click', function(event) {
+        if (event.target.matches('.page-link')) {
+            event.preventDefault(); // Evita que el enlace recargue la página
+            const newUrl = event.target.href;
+    
+            // Actualiza la URL en la barra de direcciones
+            history.pushState(null, '', newUrl);
+    
+            // Realiza la solicitud AJAX con la nueva URL
+            fetch(newUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateTable(data.books);
+                updatePagination(data.total_pages, data.current_page);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+    
 
     function applySearch() {
         var searchTerm = document.getElementById("search-input").value;
@@ -167,8 +203,9 @@ Biblioteca
     
     function updatePagination(totalPages, currentPage) {
         const paginationContainer = document.querySelector('.pagination');
-        paginationContainer.innerHTML = '';  // Clear existing pagination buttons
-
+        paginationContainer.innerHTML = ''; // Clear existing pagination buttons
+    
+        // Include current search and order parameters in the pagination links
         const urlParams = new URLSearchParams(window.location.search);
         const searchTerm = urlParams.get('search') || '';
         const order = urlParams.get('o') || 'titulo';
@@ -176,8 +213,9 @@ Biblioteca
     
         for (let i = 1; i <= totalPages; i++) {
             const pageLink = document.createElement('a');
-            // Include current search and order parameters in the pagination links
-            pageLink.href = `?search=${encodeURIComponent(searchTerm)}&o=${encodeURIComponent(order)}&d=${encodeURIComponent(direction)}&page=${i}`;
+            // Mantain current search and order parameters in the pagination links
+            urlParams.set('page', i);
+            pageLink.href = `?${urlParams.toString()}`;
             pageLink.innerText = i;
             pageLink.className = 'page-link';
             if (i === currentPage) {
@@ -185,12 +223,13 @@ Biblioteca
             }
     
             const pageItem = document.createElement('li');
-            pageItem.className = 'page-item';
+            pageItem.className = i === currentPage ? 'page-item active' : 'page-item';
             pageItem.appendChild(pageLink);
     
             paginationContainer.appendChild(pageItem);
         }
     }
+    
 </script>
 {% endblock %}
 
