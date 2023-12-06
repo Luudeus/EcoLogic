@@ -14,7 +14,7 @@ from flask import (
     session,
 )
 from flask_session import Session
-from functions import login_required
+from functions import login_required, logged_in_redirect
 from werkzeug.security import check_password_hash, generate_password_hash
 
 # Configure application
@@ -56,6 +56,7 @@ def index():
 
 
 @app.route("/login", methods=["GET", "POST"])
+@logged_in_redirect
 def login():
     """Log user in"""
 
@@ -109,6 +110,7 @@ def login():
 
 
 @app.route("/register", methods=["GET", "POST"])
+@logged_in_redirect
 def register():
     """Register user"""
     if request.method == "GET":
