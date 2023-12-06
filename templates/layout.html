@@ -34,9 +34,16 @@
                     <ul class="navbar-nav me-auto mt-2">
                         <li class="nav-item"><a class="nav-link" href="/quienes-somos">Quiénes Somos</a></li>
                         <li class="nav-item"><a class="nav-link" href="/biblioteca">Biblioteca</a></li>
+                        {% if session["permission_type"] == "normal" %}
+                            <li class="nav-item"><a class="nav-link" href="/prestamos">Préstamos</a></li>
+                        {% else if session["permission_type"] == "bibliotecario" %}
+                            <li class="nav-item"><a class="nav-link" href="/agregar-libros">Agregar Libros</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/editar-usuarios">Editar Usuarios</a></li>
+                        {% endif %}
                     </ul>
                     {% if session["user_id"] %}
                         <ul class="navbar-nav ms-auto mt-2">
+                            <li class="nav-item"><a class="nav-link" href="/cuenta">Mi cuenta</a></li>
                             <li class="nav-item"><a class="nav-link" href="/logout">Cerrar Sesión</a></li>
                         </ul>
                     {% else %}
