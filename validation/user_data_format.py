@@ -17,14 +17,14 @@ def format_rut(rut):
 
 def format_mail(mail):
     """
-    Remove all periods from an email address. Note: This function is not typically
+    Remove all spaces from an email address. Note: This function is not typically
     used for email validation or normalization as periods can be significant.
 
     Parameters:
     mail (str): A string representing an email address.
 
     Returns:
-    str: The email address with whitespaces removed.
+    str: The email address with spaces removed.
     """
     mail = mail.replace(" ", "")
     return mail
