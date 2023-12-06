@@ -203,7 +203,7 @@ def register():
 def logout():
     """Log user out"""
 
-    # Forget any user_id
+    # Forget any user_id and permissions
     session.clear()
 
     # Redirect user to login form
