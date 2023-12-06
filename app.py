@@ -2,6 +2,7 @@ from flask_mysqldb import MySQL
 import re
 import os
 from validation.user_data_format import *
+from validation.user_registration_validator import *
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -95,7 +96,7 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["RUT"]
-        
+
         # Remember permission type of the user
         session["permission_type"] = rows[0]["permisos"]
 
@@ -115,58 +116,30 @@ def login():
 def register():
     """Register user"""
     if request.method == "GET":
+        # User reached route via GET (as by clicking a link or via redirect)
         return render_template("register.html")
     else:
-        # Ensure rut was submitted
-        if not request.form.get("rut"):
-            flash("Se debe ingresar el RUT", "warning")
-            return render_template("register.html")
-
-        # Ensure name was submitted
-        elif not request.form.get("name"):
-            flash("Se debe ingresar el nombre", "warning")
-            return render_template("register.html")
-
-        # Ensure mail was submitted
-        elif not request.form.get("mail"):
-            flash("Se debe ingresar el correo", "warning")
-            return render_template("register.html")
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            flash("Se debe ingresar la contraseña", "warning")
-            return render_template("register.html")
-
-        # Ensure confirmation password was submitted
-        elif not request.form.get("confirmation"):
-            flash("Se debe re-ingresar la contraseña", "warning")
-            return render_template("register.html")
-
-        # Check if passwords match
-        if request.form.get("password") != request.form.get("confirmation"):
-            flash(
-                "La contraseña y la contraseña de confirmación no coinciden", "warning"
-            )
-            return render_template("register.html")
-
-        # Ensure password has at least two digits and three letters
+        # Get form data
+        rut = request.form.get("rut")
+        name = request.form.get("name")
+        mail = request.form.get("mail")
         password = request.form.get("password")
-        digits = re.findall(r"\d", password)
-        letters = re.findall(r"[A-Za-z]", password)
+        confirmation = request.form.get("confirmation")
 
-        if not (len(digits) >= 2 and len(letters) >= 3):
-            flash(
-                "La contraseña debe contener al menos 3 letras y 2 dígitos", "warning"
-            )
+        # Validate user's entries
+        errors = validate_user_input(rut, name, mail, password, confirmation)
+        if errors:
+            for error in errors:
+                flash(error, "warning")
             return render_template("register.html")
 
-        # Format RUT, mail, and name
-        rut, mail, name = format_data(
-            request.form.get("rut"), request.form.get("mail"), request.form.get("name")
-        )
+        # Format RUT, mail and name
+        formatted_rut, formatted_mail, formatted_name = format_data(rut, mail, name)
 
         # Check if rut is available
         cursor = mysql.connection.cursor()
+
+        # Insert the user into the database
         try:
             cursor.execute("SELECT * FROM User WHERE RUT = %s", (rut,))
             rows = cursor.fetchall()
@@ -182,11 +155,11 @@ def register():
             cursor.execute(
                 "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
                 (
-                    rut,
-                    name,
-                    mail,
+                    formatted_rut,
+                    formatted_name,
+                    formatted_mail,
                     "normal",
-                    generate_password_hash(request.form.get("password")),
+                    hash_password(password),
                 ),
             )
             mysql.connection.commit()
@@ -217,7 +190,7 @@ def logout():
 def quienes_somos():
     # User reached route via GET (as by clicking a link or via redirect)
     return render_template("quienes-somos.html")
-    
+
 
 @app.route("/biblioteca", methods=["GET"])
 def biblioteca():
@@ -225,7 +198,7 @@ def biblioteca():
     search_term = request.args.get("search", default="")
     order = request.args.get("o", default="titulo")
     direction = request.args.get("d", default="ASC").upper()
-    page = request.args.get('page', 1, type=int)
+    page = request.args.get("page", 1, type=int)
     per_page = 10  # Limit of items per page
 
     # Connect to the database
@@ -268,7 +241,7 @@ def biblioteca():
     cursor.execute(count_query, (f"%{search_term}%",) if search_term else ())
     result = cursor.fetchone()
     print(result)
-    total_books = result['COUNT(*)'] if result else 0
+    total_books = result["COUNT(*)"] if result else 0
 
     # Calculate total pages
     total_pages = (total_books + per_page - 1) // per_page
@@ -277,7 +250,9 @@ def biblioteca():
 
     # Check if the request is an AJAX request
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"books": books, "total_pages": total_pages, "current_page": page})
+        return jsonify(
+            {"books": books, "total_pages": total_pages, "current_page": page}
+        )
 
     # Create a Pagination object
     pagination = Pagination(page=page, per_page=per_page, total_count=total_books)
@@ -286,36 +261,43 @@ def biblioteca():
     return render_template("biblioteca.html", books=books, pagination=pagination)
 
 
-
 @app.route("/agregar-libros", methods=["GET", "POST"])
 def agregar_libro():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("agregar-libros.html")
     else:
-        if not request.form.get('titulo'):
-            flash("Se debe introducir título.\nTodos los campos son obligarios", "warning")
+        if not request.form.get("titulo"):
+            flash(
+                "Se debe introducir título.\nTodos los campos son obligarios", "warning"
+            )
             render_template("agregar-libros.html")
-        elif not request.form.get('autor'):
-            flash("Se debe introducir autor.\nTodos los campos son obligarios", "warning")
+        elif not request.form.get("autor"):
+            flash(
+                "Se debe introducir autor.\nTodos los campos son obligarios", "warning"
+            )
             render_template("agregar-libros.html")
-        elif not request.form.get('anio'):
+        elif not request.form.get("anio"):
             flash("Se debe introducir año.\nTodos los campos son obligarios", "warning")
             render_template("agregar-libros.html")
-        elif not request.form.get('genero'):
-            flash("Se debe introducir género.\nTodos los campos son obligarios", "warning")
+        elif not request.form.get("genero"):
+            flash(
+                "Se debe introducir género.\nTodos los campos son obligarios", "warning"
+            )
             render_template("agregar-libros.html")
-        elif not request.form.get('stock'):
-            flash("Se debe introducir stock.\nTodos los campos son obligarios", "warning")
+        elif not request.form.get("stock"):
+            flash(
+                "Se debe introducir stock.\nTodos los campos son obligarios", "warning"
+            )
             render_template("agregar-libros.html")
         # User reached route via POST (as by submitting a form)
-        titulo = request.form.get('titulo')
-        autor = request.form.get('autor')
-        anio = request.form.get('anio')
-        genero = request.form.get('genero')
-        stock = request.form.get('stock')
+        titulo = request.form.get("titulo")
+        autor = request.form.get("autor")
+        anio = request.form.get("anio")
+        genero = request.form.get("genero")
+        stock = request.form.get("stock")
         print(titulo, autor, anio, genero, stock)
-        
+
         cursor = mysql.connection.cursor()
         try:
             # Asegúrate de que los nombres de las columnas en la consulta coincidan con tu esquema de DB
@@ -325,20 +307,24 @@ def agregar_libro():
             print("No se pudo registrar el libro:", e)
             flash("No se pudo registrar el libro.", "warning")
             return render_template("agregar-libros.html")
-            
-        
+
         mysql.connection.commit()
         cursor.close()
-        
+
         # Flash book creation success
-        flash(f"Libro creado correctamente.\nTítulo: {titulo}\nAutor: {autor}\nAño: {anio}\nGénero: {genero}\nStock: {stock}", "success")
+        flash(
+            f"Libro creado correctamente.\nTítulo: {titulo}\nAutor: {autor}\nAño: {anio}\nGénero: {genero}\nStock: {stock}",
+            "success",
+        )
         return render_template("agregar-libros.html")
-    
+
 
 @app.route("/agregar-usuarios", methods=["GET", "POST"])
 def agregar_usuarios():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
-        return render_template("agregar-usuarios.html")    
+        return render_template("agregar-usuarios.html")
+
+
 if __name__ == "__main__":
     app.run(debug=True)

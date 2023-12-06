@@ -2,7 +2,9 @@ import re
 from werkzeug.security import generate_password_hash
 
 
-def validate_user_input(rut=None, name=None, mail=None, password=None, confirmation=None):
+def validate_user_input(
+    rut=None, name=None, mail=None, password=None, confirmation=None
+):
     """Validate user input for registration.
 
     Args:
@@ -29,9 +31,13 @@ def validate_user_input(rut=None, name=None, mail=None, password=None, confirmat
         errors.append("Se debe ingresar la contraseña")
     if not confirmation:
         errors.append("Se debe re-ingresar la contraseña")
-
+    # Mail complexity validation
+    if not is_email_complex(mail):
+        errors.append(
+            "El correo debe estar en un formato correcto. Ejemplo: 'example@example.com'"
+        )
     # Check if passwords match
-    if password != confirmation:
+    if not passwords_match(password, confirmation):
         errors.append("La contraseña y la contraseña de confirmación no coinciden")
 
     # Password complexity validation
@@ -54,6 +60,48 @@ def is_password_complex(password):
     digits = re.findall(r"\d", password)
     letters = re.findall(r"[A-Za-z]", password)
     return len(digits) >= 2 and len(letters) >= 3
+
+
+def is_email_complex(email):
+    """Check if the email address meets complexity requirements.
+
+    Args:
+        email (str): The user's email address.
+
+    Returns:
+        bool: True if the email meets complexity requirements, False otherwise.
+
+    """
+    # Check if the email contains only one "@" character
+    if email.count("@") != 1:
+        return False
+
+    # Split the email into username and domain
+    username, domain = email.split("@")
+
+    # Check if the username and domain meet complexity requirements
+    if len(username) < 1 or len(domain) < 1:
+        return False
+
+    # Check if the domain contains at least one "." character
+    if "." not in domain:
+        return False
+
+    return True
+
+
+def passwords_match(password, confirmation):
+    """Check if the password and confirmation password match.
+
+    Args:
+        password (str): The user's password.
+        confirmation (str): The user's confirmation password.
+
+    Returns:
+        bool: True if the password match, False otherwise.
+
+    """
+    return password == confirmation
 
 
 def hash_password(password):
