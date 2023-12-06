@@ -1,4 +1,4 @@
-import mysql.connector as SQL
+from flask_mysqldb import MySQL
 import re
 import os
 from dotenv import load_dotenv
@@ -18,17 +18,16 @@ Session(app)
 # Load environment variables from .env
 load_dotenv()
 
-# Configure mysql.connector library to use MySQL database
-try:
-    db = SQL.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASS"),
-        database=os.getenv("DB_NAME")
-    )
-    print("Database connection established.")
-except SQL.Error as e:
-    print("Error connecting to MySQL:", e)
+# Configure Flask-MySQLdb
+app.config["MYSQL_HOST"] = os.getenv("DB_HOST")
+app.config["MYSQL_USER"] = os.getenv("DB_USER")
+app.config["MYSQL_PASSWORD"] = os.getenv("DB_PASS")
+app.config["MYSQL_DB"] = os.getenv("DB_NAME")
+app.config["MYSQL_CURSORCLASS"] = "DictCursor"
+
+# Initialize MySQL
+mysql = MySQL(app)
+
 
 @app.after_request
 def after_request(response):
@@ -67,12 +66,10 @@ def login():
         rut = request.form.get("rut").replace(".", "").replace("-", "")
 
          # Create a new database cursor
-        cursor = db.cursor(dictionary=True)
+        cursor = mysql.connection.cursor()
 
         # Query database for rut
-        cursor.execute(
-            "SELECT * FROM User WHERE RUT = %s", (rut,)
-        )
+        cursor.execute("SELECT * FROM User WHERE RUT = %s", (rut,))
         rows = cursor.fetchall()
 
         # Ensure rut exists and password is correct
@@ -145,11 +142,9 @@ def register():
         rut = request.form.get("rut").replace(".", "").replace("-", "")
 
         # Check if rut is available
-        cursor = db.cursor(dictionary=True)
+        cursor = mysql.connection.cursor()
         try:
-            cursor.execute(
-                "SELECT * FROM User WHERE RUT = %s", (rut,)
-            )
+            cursor.execute("SELECT * FROM User WHERE RUT = %s", (rut,))
             rows = cursor.fetchall()
             if len(rows) > 0:
                 flash("El usuario ya existe", "warning")
@@ -159,12 +154,12 @@ def register():
 
         # Insert the user into the users table
         try:
-            cursor = db.cursor()
+            cursor = mysql.connection.cursor()
             cursor.execute(
                 "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
                 (rut, request.form.get("name"), request.form.get("mail"), "normal", generate_password_hash(request.form.get("password"))),
             )
-            db.commit()
+            mysql.connection.commit()
         except Exception as e:
             # Handle the exception
             flash("Error al registrar el usuario", "warning")
@@ -184,7 +179,7 @@ def biblioteca():
     """
     if request.method == 'GET':
         # Connect to the database and fetch initial set of books
-        cursor = db.cursor(dictionary=True)
+        cursor = mysql.connection.cursor()
         try:
             cursor.execute("SELECT * FROM Book")
             initial_books = cursor.fetchall()
@@ -199,7 +194,7 @@ def biblioteca():
     filter_type = request.args.get('filter', 'all')
 
     # Connect to the database and execute the query based on the filter type
-    cursor = db.cursor(dictionary=True)
+    cursor = mysql.connection.cursor()
     try:
         if filter_type == 'titulo':
             cursor.execute("SELECT * FROM Book WHERE titulo LIKE %s", ('%' + query + '%',))
