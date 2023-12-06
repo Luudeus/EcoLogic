@@ -86,12 +86,16 @@ Biblioteca
     function applyOrder() {
         var selectedOrder = document.getElementById("orderSelect").value;
         var selectedDirection = document.getElementById("directionSelect").value;
-        fetch("/biblioteca", {
-            method: 'POST',
+        var newUrl = `/biblioteca?o=${selectedOrder}&d=${selectedDirection}`;
+    
+        // Actualizar la URL en la barra de direcciones
+        history.pushState(null, '', newUrl);
+    
+        fetch(newUrl, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ order: selectedOrder, direction: selectedDirection })
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
         .then(response => response.json())
         .then(data => {
@@ -101,6 +105,7 @@ Biblioteca
             console.error('Error:', error);
         });
     }
+         
     
     
 </script>

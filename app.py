@@ -182,46 +182,30 @@ def logout():
     return redirect("/")
  
     
-@app.route("/biblioteca", methods=['GET', 'POST'])
+@app.route("/biblioteca", methods=['GET'])
 def biblioteca():
-    """
-    Handle requests to the library page. 
-    On GET request, render the library page.
-    On POST request, perform book search and filtering.
-    """
-    if request.method == 'GET':
-        # Connect to the database and fetch initial set of books
-        cursor = mysql.connection.cursor()
-        try:
-            cursor.execute("SELECT * FROM Book ORDER BY titulo")
-            initial_books = cursor.fetchall()
-            # Convert tuple to a list
-            initial_books = list(initial_books)
-        except Exception as e:
-            # Handle the exception
-            print("Error al intentar cargar los libros:", e)
-        finally:
-            cursor.close()
+    order = request.args.get('o', default='titulo')
+    direction = request.args.get('d', default='ASC').upper()
 
-        # Render the library page template with initial books
-        return render_template('biblioteca.html', books=initial_books)
-
+    cursor = mysql.connection.cursor()
+    valid_columns = ['titulo', 'autor', 'anio', 'genero', 'stock']
+    if order in valid_columns and direction in ['ASC', 'DESC']:
+        # Construir la consulta SQL asegurando que el valor de 'order' sea seguro
+        query = f"SELECT * FROM Book ORDER BY {order} {direction}"
     else:
-        valid_columns = ['titulo', 'autor', 'anio', 'genero', 'stock']
-        data = request.json
-        order = data.get('order')
-        direction = data.get('direction', 'ASC')  # Order by ascendant by default
-        if order in valid_columns and direction in ['ASC', 'DESC']:
-            cursor = mysql.connection.cursor()
-            query = f"SELECT * FROM Book ORDER BY {order} {direction}"
-            cursor.execute(query)
-            books = cursor.fetchall()
-            books = list(books)
-            cursor.close()
-            return jsonify({'books': books})
-        else:
-            # Handle invalid values
-            return jsonify({'error': 'Invalid order or direction parameter'}), 400
+        # Ordenamiento predeterminado si los parámetros no son válidos
+        query = "SELECT * FROM Book ORDER BY titulo ASC"
+    
+    cursor.execute(query)
+    books = cursor.fetchall()
+    cursor.close()
+
+    # Si la solicitud es AJAX, entonces devolvemos JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'books': books})
+
+    # Si no, renderizamos la página con los libros
+    return render_template('biblioteca.html', books=books)
         
 
 if __name__ == "__main__":
