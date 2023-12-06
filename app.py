@@ -1,7 +1,7 @@
 from flask_mysqldb import MySQL
 import re
 import os
-from validation.user_data_format import format_rut
+from validation.user_data_format import *
 from dotenv import load_dotenv
 from flask import Flask, render_template, flash, redirect, jsonify, url_for, request, session
 from flask_session import Session
@@ -139,8 +139,8 @@ def register():
             flash("La contraseña debe contener al menos 3 letras y 2 dígitos", "warning")
             return render_template("register.html")
         
-        # Format RUT to delete dots and hyphens
-        rut = format_rut(request.form.get("rut"))
+        # Format RUT, mail, and name
+        rut, mail, name = format_rut(request.form.get("rut"), request.form.get("mail"), request.form.get("name"))
 
         # Check if rut is available
         cursor = mysql.connection.cursor()
@@ -158,7 +158,7 @@ def register():
             cursor = mysql.connection.cursor()
             cursor.execute(
                 "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
-                (rut, request.form.get("name"), request.form.get("mail"), "normal", generate_password_hash(request.form.get("password"))),
+                (rut, name, mail, "normal", generate_password_hash(request.form.get("password"))),
             )
             mysql.connection.commit()
         except Exception as e:
