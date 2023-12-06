@@ -12,4 +12,4 @@ DB_PASS={contraseña}
 DB_NAME={nombre de la base de datos}
 
 Imagen de ejemplo:
-![database_connection](https://drive.google.com/file/d/1y7zDrESWvD7eWghMjkncfwMIpvExhpmr/view)
+![database_connection](/database.PNG)
