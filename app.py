@@ -14,6 +14,7 @@ from flask import (
     session,
 )
 from flask_session import Session
+from pagination import Pagination
 from functions import login_required, logged_in_redirect
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -220,10 +221,12 @@ def quienes_somos():
 
 @app.route("/biblioteca", methods=["GET"])
 def biblioteca():
-    # Retrieve query parameters for search and ordering
+    # Retrieve query parameters for search, ordering, and pagination
     search_term = request.args.get("search", default="")
     order = request.args.get("o", default="titulo")
     direction = request.args.get("d", default="ASC").upper()
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Limit of items per page
 
     # Connect to the database
     cursor = mysql.connection.cursor()
@@ -242,8 +245,11 @@ def biblioteca():
     if order in valid_columns and direction in ["ASC", "DESC"]:
         order_clause = f" ORDER BY {order} {direction}"
 
-    # Complete SQL query
-    query = f"{base_query}{where_clause}{order_clause}"
+    # Pagination clause
+    pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
+
+    # Complete SQL query for books
+    query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
 
     # Execute the query with parameters if needed
     try:
@@ -256,14 +262,29 @@ def biblioteca():
 
     # Fetch the results
     books = cursor.fetchall()
+
+    # Query for total count of books (for pagination)
+    count_query = "SELECT COUNT(*) FROM Book" + where_clause
+    cursor.execute(count_query, (f"%{search_term}%",) if search_term else ())
+    result = cursor.fetchone()
+    print(result)
+    total_books = result['COUNT(*)'] if result else 0
+
+    # Calculate total pages
+    total_pages = (total_books + per_page - 1) // per_page
+
     cursor.close()
 
     # Check if the request is an AJAX request
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"books": books})
+        return jsonify({"books": books, "total_pages": total_pages, "current_page": page})
 
-    # Render the template with the fetched books
-    return render_template("biblioteca.html", books=books)
+    # Create a Pagination object
+    pagination = Pagination(page=page, per_page=per_page, total_count=total_books)
+
+    # Render the template with the fetched books and pagination data
+    return render_template("biblioteca.html", books=books, pagination=pagination)
+
 
 
 @app.route("/agregar-libros", methods=["GET", "POST"])

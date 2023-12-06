@@ -61,13 +61,7 @@ Biblioteca
     </div>  
 
     <!-- Pagination buttons -->
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            <li class="page-item"><a class="page-link" href="#">Anterior</a></li>
-            <!-- Dynamically create page number buttons -->
-            <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
-        </ul>
-    </nav>
+    {{ render_pagination(pagination) }}
 </div>
 
 <script>
@@ -92,6 +86,7 @@ Biblioteca
         .then(response => response.json())
         .then(data => {
             updateTable(data.books);
+            updatePagination(data.total_pages, data.current_page);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -136,6 +131,7 @@ Biblioteca
         .then(response => response.json())
         .then(data => {
             updateTable(data.books);
+            updatePagination(data.total_pages, data.current_page);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -157,6 +153,7 @@ Biblioteca
         .then(response => response.json())
         .then(data => {
             updateTable(data.books);
+            updatePagination(data.total_pages, data.current_page);
             // Limpiar el campo de búsqueda
             document.getElementById("search-input").value = "";
             // Restablecer los selectores de ordenación a sus valores predeterminados
@@ -168,5 +165,44 @@ Biblioteca
         });
     }
     
+    function updatePagination(totalPages, currentPage) {
+        const paginationContainer = document.querySelector('.pagination');
+        paginationContainer.innerHTML = '';  // Clear existing pagination buttons
+    
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLink = document.createElement('a');
+            pageLink.href = `?page=${i}`;  // or however you construct your links
+            pageLink.innerText = i;
+            pageLink.className = 'page-link';
+            if (i === currentPage) {
+                pageLink.classList.add('active');
+            }
+    
+            const pageItem = document.createElement('li');
+            pageItem.className = 'page-item';
+            pageItem.appendChild(pageLink);
+    
+            paginationContainer.appendChild(pageItem);
+        }
+    }
 </script>
 {% endblock %}
+
+
+{% macro render_pagination(pagination) %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% for p in pagination.iter_pages() %}
+                {% if p %}
+                    {% if p != pagination.page %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('biblioteca', page=p) }}">{{ p }}</a></li>
+                    {% else %}
+                        <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+{% endmacro %}
