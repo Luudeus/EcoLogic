@@ -1,8 +1,8 @@
 from flask_mysqldb import MySQL
 import re
 import os
-from validation.user_data_format import *
-from validation.user_registration_validator import *
+from user_validation.user_data_format import *
+from user_validation.user_registration_validator import *
 from dotenv import load_dotenv
 from flask import (
     Flask,
