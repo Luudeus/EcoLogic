@@ -129,6 +129,26 @@ Biblioteca
             row.insertCell(3).textContent = book.anio;
             row.insertCell(4).textContent = book.genero;
             row.insertCell(5).textContent = book.stock;
+
+            // Action cell
+            var actionsCell = row.insertCell(6);
+            actionsCell.style.display = "flex";
+            actionsCell.style.justifyContent = "center";
+            actionsCell.style.gap = "10px"; // This sets the space between the buttons
+
+            // Edit button
+            var editButton = document.createElement('a');
+            editButton.href = `/edit-book?id=${book.id_book}`;
+            editButton.textContent = 'Editar';
+            editButton.classList.add('btn', 'btn-primary', 'mr-2'); // Style classes
+            actionsCell.appendChild(editButton);
+
+            // Delete button
+            var deleteButton = document.createElement('a');
+            deleteButton.href = `/delete-book?id=${book.id_book}`;
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.classList.add('btn', 'btn-danger');
+            actionsCell.appendChild(deleteButton);
         });
     }
 
