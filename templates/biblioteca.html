@@ -24,7 +24,8 @@ Biblioteca
             </div>
             <div class="col-auto">
                 <select class="form-select" id="orderSelect" onchange="applyOrder()">
-                    <option value="titulo" selected>Título</option>
+                    <option value="id_book" selected>ID Libro</option>
+                    <option value="titulo">Título</option>
                     <option value="autor">Autor</option>
                     <option value="anio">Año</option>
                     <option value="genero">Género</option>
@@ -47,6 +48,7 @@ Biblioteca
         <table class="table" id="books-table">
             <thead>
                 <tr>
+                    <th scope="col">ID Libro</th>
                     <th scope="col">Título</th>
                     <th scope="col">Autor</th>
                     <th scope="col">Año</th>
@@ -120,11 +122,12 @@ Biblioteca
 
         books.forEach(book => {
             var row = tableBody.insertRow();
-            row.insertCell(0).textContent = book.titulo;
-            row.insertCell(1).textContent = book.autor;
-            row.insertCell(2).textContent = book.anio;
-            row.insertCell(3).textContent = book.genero;
-            row.insertCell(4).textContent = book.stock;
+            row.insertCell(0).textContent = book.id_book;
+            row.insertCell(1).textContent = book.titulo;
+            row.insertCell(2).textContent = book.autor;
+            row.insertCell(3).textContent = book.anio;
+            row.insertCell(4).textContent = book.genero;
+            row.insertCell(5).textContent = book.stock;
         });
     }
 
@@ -165,7 +168,7 @@ Biblioteca
             // Clean search field
             document.getElementById("search-input").value = "";
             // Set order fields to default values
-            document.getElementById("orderSelect").value = "titulo";
+            document.getElementById("orderSelect").value = "id_book";
             document.getElementById("directionSelect").value = "ASC";
         })
         .catch(error => {

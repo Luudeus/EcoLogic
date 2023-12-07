@@ -84,9 +84,9 @@ def database_user_register(cursor, rut, name, mail, password, permission="normal
     mysql.connection.commit()
 
 def search_books(template_name):
-        # Retrieve query parameters for search, ordering, and pagination
+    # Retrieve query parameters for search, ordering, and pagination
     search_term = request.args.get("search", default="")
-    order = request.args.get("o", default="titulo")
+    order = request.args.get("o", default="id_book")
     direction = request.args.get("d", default="ASC").upper()
     page = request.args.get("page", 1, type=int)
     per_page = 10  # Limit of items per page
@@ -104,7 +104,7 @@ def search_books(template_name):
         where_clause = " WHERE titulo LIKE %s"
 
     # Validate ordering parameters and add ORDER BY clause
-    valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
+    valid_columns = ["id_book","titulo", "autor", "anio", "genero", "stock"]
     if order in valid_columns and direction in ["ASC", "DESC"]:
         order_clause = f" ORDER BY {order} {direction}"
 

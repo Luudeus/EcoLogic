@@ -121,7 +121,26 @@ Editar Usuarios
             row.insertCell(1).textContent = user.nombre;
             row.insertCell(2).textContent = user.correo;
             row.insertCell(3).textContent = user.permisos;
-            // Add actions cell if needed
+
+            // Action cell
+            var actionsCell = row.insertCell(4);
+            actionsCell.style.display = "flex";
+            actionsCell.style.justifyContent = "center";
+            actionsCell.style.gap = "10px"; // This sets the space between the buttons
+
+            // Edit button
+            var editButton = document.createElement('a');
+            editButton.href = `/edit-user?id=${user.RUT}`;
+            editButton.textContent = 'Editar';
+            editButton.classList.add('btn', 'btn-primary', 'mr-2'); // Style classes
+            actionsCell.appendChild(editButton);
+
+            // Delete button
+            var deleteButton = document.createElement('a');
+            deleteButton.href = `/delete-user?id=${user.RUT}`;
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.classList.add('btn', 'btn-danger');
+            actionsCell.appendChild(deleteButton);
         });
     }
     
