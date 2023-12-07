@@ -50,6 +50,42 @@ def after_request(response):
     return response
 
 
+
+def database_user_register(cursor, rut, name, mail, password, permission="normal"):
+    """
+    Register a user into the database.
+    
+    This function registers a user into the database by inserting their RUT, name, email,
+    permission level, and password into the appropriate database table. It uses the
+    provided cursor to execute the SQL query for registration.
+
+    Args:
+        cursor: A database cursor object for executing SQL queries.
+        rut (str): The user's RUT (Rol Único Tributario), a unique identification number.
+        name (str): The user's name.
+        mail (str): The user's email address.
+        password (str): The user's password.
+        permission (str, optional): The user's permission level (e.g., "normal" or "bibliotecario").
+                                    Defaults to "normal" if not specified.
+
+    Returns:
+        None
+    """
+
+    cursor.execute(
+        "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
+        (
+            rut,
+            name,
+            mail,
+            permission,
+            password,
+        ),
+    )
+    mysql.connection.commit()
+    
+
+# Route functions
 @app.route("/")
 @login_required
 def index():
@@ -67,7 +103,7 @@ def login():
 
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
-        return render_template("register.html")
+        return render_template("login.html")
 
     # User reached route via POST (as by submitting a form via POST)
     else:
@@ -80,7 +116,7 @@ def login():
         if errors:
             for error in errors:
                 flash(error, "warning")
-            return render_template("register.html")
+            return render_template("login.html")
 
         # Format RUT to delete spaces and hyphens
         rut = format_rut(request.form.get("rut"))
@@ -142,10 +178,10 @@ def register():
 
         # Insert the user into the database
         try:
-            cursor.execute("SELECT * FROM User WHERE RUT = %s", (rut,))
+            cursor.execute("SELECT * FROM User WHERE RUT = %s", (formatted_rut,))
             rows = cursor.fetchall()
             if len(rows) > 0:
-                flash("El usuario ya existe", "warning")
+                flash("Error al registrarse: el usuario ya existe", "warning")
                 return render_template("register.html")
         finally:
             cursor.close()
@@ -153,17 +189,7 @@ def register():
         # Insert the user into the users table
         try:
             cursor = mysql.connection.cursor()
-            cursor.execute(
-                "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
-                (
-                    formatted_rut,
-                    formatted_name,
-                    formatted_mail,
-                    "normal",
-                    hash_password(password),
-                ),
-            )
-            mysql.connection.commit()
+            database_user_register(cursor, formatted_rut, formatted_name, formatted_mail, hash_password(password))
         except Exception as e:
             # Handle the exception
             print("Error al intentar registrar el usuario:", e)
@@ -341,7 +367,7 @@ def agregar_usuarios():
         if errors:
             for error in errors:
                 flash(error, "warning")
-            return render_template("register.html")
+            return render_template("agregar-usuarios.html")
 
         # Format RUT, mail and name
         formatted_rut, formatted_mail, formatted_name = format_data(rut, mail, name)
@@ -351,41 +377,32 @@ def agregar_usuarios():
 
         # Insert the user into the database
         try:
-            cursor.execute("SELECT * FROM User WHERE RUT = %s", (rut,))
+            cursor.execute("SELECT * FROM User WHERE RUT = %s", (formatted_rut,))
             rows = cursor.fetchall()
             if len(rows) > 0:
-                flash("El usuario ya existe", "warning")
-                return render_template("register.html")
+                flash("Error al registrar: el usuario ya existe", "warning")
+                return render_template("agregar-usuarios.html")
         finally:
             cursor.close()
 
         # Insert the user into the users table
         try:
             cursor = mysql.connection.cursor()
-            cursor.execute(
-                "INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES (%s, %s, %s, %s, %s)",
-                (
-                    formatted_rut,
-                    formatted_name,
-                    formatted_mail,
-                    permission,
-                    hash_password(password),
-                ),
-            )
+            database_user_register(cursor, formatted_rut, formatted_name, formatted_mail, hash_password(password), permission)
             mysql.connection.commit()
         except Exception as e:
             # Handle the exception
             print("Error al intentar registrar el usuario:", e)
             flash("Error al registrar el usuario", "warning")
-            return render_template("register.html")
+            return render_template("agregar-usuarios.html")
         finally:
             cursor.close()
 
         flash(
-            f"Usuario creado correctamente.\nRUT:{rut}\nNombre:{name}\nCorreo:{mail}\nPermisos:{permission}\nContraseña\n:{password}",
+            f"Usuario creado correctamente.\nRUT: {rut}\nNombre: {name}\nCorreo: {mail}\nPermisos: {permission}\nContraseña: {password}",
             "success",
         )
-        return render_template("login.html")
+        return render_template("agregar-usuarios.html")
 
 
 if __name__ == "__main__":

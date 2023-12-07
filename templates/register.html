@@ -11,51 +11,22 @@
     </div>
     <form action="/register" method="post">
         <div class="mb-3">
-            <input id="rut_register" name="rut" autofocus class="form-control mx-auto w-auto" autocomplete="off" type="text" placeholder="RUT">
+            <input id="rut" name="rut" autofocus class="form-control mx-auto w-auto" autocomplete="off" type="text" placeholder="RUT" required>
         </div>
         <div class="mb-3">
-            <input name="name" autofocus class="form-control mx-auto w-auto" autocomplete="off" type="text" placeholder="Nombre">
+            <input name="name" autofocus class="form-control mx-auto w-auto" autocomplete="off" type="text" placeholder="Nombre" required>
         </div>
         <div class="mb-3">
-            <input name="mail" autofocus class="form-control mx-auto w-auto" autocomplete="off" type="text" placeholder="Correo">
+            <input name="mail" autofocus class="form-control mx-auto w-auto" autocomplete="off" type="text" placeholder="Correo" required>
         </div>
         <div class="mb-3">
-            <input name="password" class="form-control mx-auto w-auto" autocomplete="off" type="password" placeholder="Contraseña">
+            <input name="password" class="form-control mx-auto w-auto" autocomplete="off" type="password" placeholder="Contraseña" required>
         </div>
 
         <div class="mb-3">
-            <input name="confirmation" class="form-control mx-auto w-auto" autocomplete="off" type="password" placeholder="Confirmar contraseña">
+            <input name="confirmation" class="form-control mx-auto w-auto" autocomplete="off" type="password" placeholder="Confirmar contraseña" required>
         </div>
         <button class="btn btn-primary" type="submit">Registrarse</button>
     </form>
-    <script>
-        function formateaRut(rut) {
-            var actual = rut.replace(/[^0-9kK]/g, "").replace(/k/g, "K");
-
-            if (actual != '' && actual.length > 1) {
-                var sinPuntos = actual.replace(/\./g, "");
-                var actualLimpio = sinPuntos.replace(/-/g, "");
-                var inicio = actualLimpio.substring(0, actualLimpio.length - 1);
-                var rutPuntos = "";
-                var i = 0;
-                var j = 1;
-                for (i = inicio.length - 1; i >= 0; i--) {
-                    var letra = inicio.charAt(i);
-                    rutPuntos = letra + rutPuntos;
-                    if (j % 3 == 0 && j <= inicio.length - 1) {
-                        rutPuntos = "." + rutPuntos;
-                    }
-                    j++;
-                }
-                var dv = actualLimpio.substring(actualLimpio.length - 1);
-                rutPuntos = rutPuntos + "-" + dv;
-                return rutPuntos.substr(0, 12); // Asegurarse de que el RUT no exceda los 12 caracteres
-            }
-            return actual; // Retorna el RUT procesado si no es lo suficientemente largo
-        }
-
-        document.getElementById('rut_register').addEventListener('input', function() {
-            this.value = formateaRut(this.value);
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js_scripts/formateaRut.js') }}"></script>
 {% endblock %}
