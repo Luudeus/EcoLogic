@@ -23,9 +23,12 @@ Editar Usuario
 
         <div class="mb-3">
             <label for="permisos">Permisos:</label>
-            <input type="text" class="form-control" id="permisos" name="permisos" value="{{ user.permisos }}" required>
+            <select type="text" class="form-select" id="permisos" name="permisos" required>
+                <option value="normal" {% if user.permisos == 'normal' %} selected {% endif %}>Normal</option>
+                <option value="bibliotecario" {% if user.permisos == 'bibliotecario' %} selected {% endif %}>Bibliotecario</option>
+            </select>            
         </div>
-
+        <a href="/editar-usuarios" class="btn btn-secondary">Volver</a>
         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
     </form>
 </div>
