@@ -50,11 +50,10 @@ def after_request(response):
     return response
 
 
-
 def database_user_register(cursor, rut, name, mail, password, permission="normal"):
     """
     Register a user into the database.
-    
+
     This function registers a user into the database by inserting their RUT, name, email,
     permission level, and password into the appropriate database table. It uses the
     provided cursor to execute the SQL query for registration.
@@ -83,7 +82,7 @@ def database_user_register(cursor, rut, name, mail, password, permission="normal
         ),
     )
     mysql.connection.commit()
-    
+
 
 # Route functions
 @app.route("/")
@@ -189,7 +188,13 @@ def register():
         # Insert the user into the users table
         try:
             cursor = mysql.connection.cursor()
-            database_user_register(cursor, formatted_rut, formatted_name, formatted_mail, hash_password(password))
+            database_user_register(
+                cursor,
+                formatted_rut,
+                formatted_name,
+                formatted_mail,
+                hash_password(password),
+            )
         except Exception as e:
             # Handle the exception
             print("Error al intentar registrar el usuario:", e)
@@ -388,7 +393,14 @@ def agregar_usuarios():
         # Insert the user into the users table
         try:
             cursor = mysql.connection.cursor()
-            database_user_register(cursor, formatted_rut, formatted_name, formatted_mail, hash_password(password), permission)
+            database_user_register(
+                cursor,
+                formatted_rut,
+                formatted_name,
+                formatted_mail,
+                hash_password(password),
+                permission,
+            )
             mysql.connection.commit()
         except Exception as e:
             # Handle the exception
