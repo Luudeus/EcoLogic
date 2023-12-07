@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Editar Usuario
+{% endblock %}
+
+{% block main %}
+<div class="container mt-4">
+    <h2>Editar Usuario</h2>
+    <form id="edit-user-form">
+        <!-- Hidden field for RUT to identify the user -->
+        <input type="hidden" name="rut" value="{{ user.RUT }}">
+
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" value="{{ user.nombre }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="correo">Correo:</label>
+            <input type="email" class="form-control" id="correo" name="correo" value="{{ user.correo }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="permisos">Permisos:</label>
+            <input type="text" class="form-control" id="permisos" name="permisos" value="{{ user.permisos }}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </form>
+</div>
+{% endblock %}
