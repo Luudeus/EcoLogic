@@ -117,7 +117,7 @@ Editar Usuarios
 
         users.forEach(user => {
             var row = tableBody.insertRow();
-            row.insertCell(0).textContent = user.RUT;
+            row.insertCell(0).textContent = formatRut(user.RUT);
             row.insertCell(1).textContent = user.nombre;
             row.insertCell(2).textContent = user.correo;
             row.insertCell(3).textContent = user.permisos;
@@ -230,7 +230,33 @@ Editar Usuarios
         .catch(error => {
             console.error('Error:', error);
         });
-    }    
+    }
+    
+    function formatRut(rut) {
+        var cleanedRut = rut.replace(/[^0-9kK]/g, "").replace(/k/g, "K");
+    
+        if (cleanedRut !== '' && cleanedRut.length > 1) {
+            var numericPart = cleanedRut.replace(/\./g, "").replace(/-/g, "");
+            if (numericPart.length > 9) {
+                numericPart = numericPart.slice(0, -1);
+            }
+            var mainPart = numericPart.substring(0, numericPart.length - 1);
+            var formattedRut = "";
+            var i;
+            for (i = mainPart.length - 1; i >= 0; i--) {
+                var digit = mainPart.charAt(i);
+                formattedRut = digit + formattedRut;
+                if ((mainPart.length - i) % 3 === 0 && i !== 0) {
+                    formattedRut = "." + formattedRut;
+                }
+            }
+            var dv = numericPart.substring(numericPart.length - 1);
+            formattedRut += "-" + dv;
+            return formattedRut.substring(0, 12);
+        }
+        return cleanedRut;
+    }
+    
 </script>
 {% endblock %}
 
