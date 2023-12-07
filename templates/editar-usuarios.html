@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Editar Usuarios
+{% endblock %}
+
+{% block main %}
+<div class="container mt-4">
+    <!-- Search and filter section -->
+    <div class="row mb-3 align-items-center">
+        <form class="col">
+            <div class="row g-3 align-items-center">
+                <div class="col">
+                    <input type="text" class="form-control" id="search-input" placeholder="Buscar usuarios...">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="button" onclick="applySearch()">Buscar</button>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-secondary" type="button" onclick="clearSearch()">Limpiar</button>
+                </div>
+                <div class="col-auto" style="color: #007bff">
+                    <span>Ordenar por</span>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select" id="orderSelect" onchange="applyOrder()">
+                        <option value="nombre" selected>Nombre</option>
+                        <option value="rut">RUT</option>
+                        <option value="correo">Correo</option>
+                        <option value="permisos">Permisos</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select" id="directionSelect" onchange="applyOrder()">
+                        <option value="ASC" selected>Ascendente</option>
+                        <option value="DESC">Descendente</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table of users -->
+    <div class="table-responsive">
+        <table class="table" id="users-table">
+            <thead>
+                <tr>
+                    <th scope="col">RUT</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Correo</th>
+                    <th scope="col">Permisos</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- The user entries will be dynamically inserted here by JavaScript -->
+            </tbody>
+        </table>
+    </div>  
+
+    <!-- Pagination buttons -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <!-- Pagination items will be dynamically inserted here -->
+        </ul>
+    </nav>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Llamada inicial para cargar los usuarios
+        updateTable(); // Asumiendo que obtendrás los datos de los usuarios de alguna manera
+    
+        // Agregar evento de escucha a la barra de búsqueda
+        var searchInput = document.getElementById("search-input");
+        searchInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                applySearch();
+            }
+        });
+    });
+    
+    document.addEventListener('click', function(event) {
+        if (event.target.matches('.page-link')) {
+            event.preventDefault();
+            const newUrl = event.target.href;
+            history.pushState(null, '', newUrl);
+            fetch(newUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateTable(data.users);
+                updatePagination(data.total_pages, data.current_page);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+    
+    function applySearch() {
+        var searchTerm = document.getElementById("search-input").value;
+        var newUrl = `/editar-usuarios?search=${encodeURIComponent(searchTerm)}`;
+        history.pushState(null, '', newUrl);
+        fetchDataAndUpdate(newUrl);
+    }
+    
+    function updateTable(users) {
+        var tableBody = document.getElementById("users-table").getElementsByTagName("tbody")[0];
+        tableBody.innerHTML = "";
+        users.forEach(user => {
+            var row = tableBody.insertRow();
+            row.insertCell(0).textContent = user.rut;
+            row.insertCell(1).textContent = user.nombre;
+            row.insertCell(2).textContent = user.correo;
+            row.insertCell(3).textContent = user.permisos;
+            // Aquí puedes agregar la celda de acciones si es necesario
+        });
+    }
+    
+    function applyOrder() {
+        var selectedOrder = document.getElementById("orderSelect").value;
+        var selectedDirection = document.getElementById("directionSelect").value;
+        var urlParams = new URLSearchParams(window.location.search);
+        var searchTerm = urlParams.get('search') || '';
+        var newUrl = `/editar-usuarios?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
+        history.pushState(null, '', newUrl);
+        fetchDataAndUpdate(newUrl);
+    }
+    
+    function clearSearch() {
+        var newUrl = `/editar-usuarios`;
+        history.pushState(null, '', newUrl);
+        fetchDataAndUpdate(newUrl);
+    }
+    
+    function updatePagination(totalPages, currentPage) {
+        const paginationContainer = document.querySelector('.pagination');
+        paginationContainer.innerHTML = '';
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchTerm = urlParams.get('search') || '';
+        const order = urlParams.get('o') || 'nombre';
+        const direction = urlParams.get('d') || 'ASC';
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLink = document.createElement('a');
+            urlParams.set('page', i);
+            pageLink.href = `?${urlParams.toString()}`;
+            pageLink.innerText = i;
+            pageLink.className = 'page-link';
+            if (i === currentPage) {
+                pageLink.classList.add('active');
+            }
+            const pageItem = document.createElement('li');
+            pageItem.className = i === currentPage ? 'page-item active' : 'page-item';
+            pageItem.appendChild(pageLink);
+            paginationContainer.appendChild(pageItem);
+        }
+    }
+    
+    function fetchDataAndUpdate(url) {
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.users);
+            updatePagination(data.total_pages, data.current_page);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }    
+</script>
+{% endblock %}
