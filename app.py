@@ -16,7 +16,7 @@ from flask import (
 )
 from flask_session import Session
 from pagination import Pagination
-from functions import login_required, logged_in_redirect
+from functions import login_required, logged_in_redirect, admin_required
 from werkzeug.security import check_password_hash, generate_password_hash
 
 # Configure application
@@ -295,6 +295,7 @@ def biblioteca():
     return search_books("biblioteca")
 
 @app.route("/agregar-libros", methods=["GET", "POST"])
+@admin_required
 def agregar_libro():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
@@ -352,11 +353,13 @@ def agregar_libro():
         return render_template("agregar-libros.html")
 
 @app.route("/editar-libros", methods=["GET"])
+@admin_required
 def editar_libros():
     return search_books("editar-libros")
 
 
 @app.route("/agregar-usuarios", methods=["GET", "POST"])
+@admin_required
 def agregar_usuarios():
     if request.method == "GET":
         # User reached route via GET (as by clicking a link or via redirect)
@@ -423,6 +426,7 @@ def agregar_usuarios():
 
 
 @app.route("/editar-usuarios", methods=["GET"])
+@admin_required
 def editar_usuarios():
     # Retrieve query parameters for search, ordering, and pagination
     search_term = request.args.get("search", default="")
