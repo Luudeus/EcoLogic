@@ -494,36 +494,89 @@ def editar_usuarios():
     return render_template("editar-usuarios.html", users=users, pagination=pagination)
 
 
-@app.route("/edit-user", methods=["GET"])
+@app.route("/edit-user", methods=["GET", "POST"])
 @admin_required
 def edit_user():
-    # Get the RUT from the query parameter
-    user_rut = request.args.get("id")
-    if not user_rut:
-        flash("No se proporcionó el RUT", "warning")
-        return render_template("editar_usuarios.html")
+    if request.method == "GET":
+        # Get the RUT from the query parameter
+        user_rut = request.args.get("id")
+        if not user_rut:
+            flash("No se proporcionó el RUT", "warning")
+            return render_template("editar_usuarios.html")
 
-    # Connect to the database
-    cursor = mysql.connection.cursor()
+        # Connect to the database
+        cursor = mysql.connection.cursor()
 
-    # Retrieve the user's data
-    try:
-        cursor.execute("SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s", (user_rut,))
-        user = cursor.fetchone()
-    except Exception as e:
-        print("No se pudieron obtener los datos del usuario:", e)
-        flash("No se pudieron obtener los datos del usuario", "warning")
-        return render_template("editar_usuarios.html")
+        # Retrieve the user's data
+        try:
+            cursor.execute("SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s", (user_rut,))
+            user = cursor.fetchone()
+        except Exception as e:
+            print("No se pudieron obtener los datos del usuario:", e)
+            flash("No se pudieron obtener los datos del usuario", "warning")
+            return render_template("editar_usuarios.html")
 
-    cursor.close()
+        cursor.close()
 
-    # Check if the user exists
-    if not user:
-        flash("Usuario no encontrado", "warning")
-        return render_template("editar_usuarios.html")
+        # Check if the user exists
+        if not user:
+            flash("Usuario no encontrado", "warning")
+            return render_template("editar_usuarios.html")
 
-    # Render the edit-user.html template passing the user's data
-    return render_template("edit-user.html", user=user)
+        # Render the edit-user.html template passing the user's data
+        return render_template("edit-user.html", user=user)
+    else:
+        # POST request logic for updating user details
+        try:
+            # Retrieve the RUT and form data
+            formatted_rut = request.form.get("hidden_formatted_rut")
+            user_rut = request.form.get("rut")
+            nombre = request.form.get("nombre")
+            correo = request.form.get("correo")
+            permisos = request.form.get("permisos")
+
+            # Check if mail's format is correct
+            if not is_email_complex(correo):
+                flash("El correo debe estar en un formato correcto. Ejemplo: 'example@example.com'", "warning")
+                raise Exception("El correo no tiene un formato adecuado.")
+            
+            # Check if the user exists
+            cursor = mysql.connection.cursor()
+            cursor.execute("SELECT RUT FROM User WHERE RUT = %s", (user_rut,))
+            if cursor.fetchone() is None:
+                cursor.close()
+                flash("Usuario no encontrado", "warning")
+                return redirect(url_for("editar_usuarios"))
+
+            # Update the user's data
+            update_query = """
+                UPDATE User
+                SET nombre = %s, correo = %s, permisos = %s
+                WHERE RUT = %s
+            """
+            cursor.execute(update_query, (nombre, correo, permisos, user_rut))
+            mysql.connection.commit()
+            cursor.close()
+            flash(f"Los datos del usuario RUT: {formatted_rut} han sido actualizados", "success")
+            return redirect(url_for("editar_usuarios"))
+
+        except Exception as e1:
+            print("Error al actualizar el usuario:", e1)
+            
+            # Connect to the database
+            cursor = mysql.connection.cursor()
+
+            # Retrieve the user's data
+            try:
+                cursor.execute("SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s", (user_rut,))
+                user = cursor.fetchone()
+            except Exception as e2:
+                print("No se pudieron obtener los datos del usuario:", e2)
+                return redirect(url_for("editar_usuarios"))
+
+            cursor.close()
+            flash("Error al actualizar el usuario", "warning")
+            return render_template("edit-user.html", user=user)
 
 
 if __name__ == "__main__":

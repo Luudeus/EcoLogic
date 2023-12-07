@@ -7,7 +7,10 @@ Editar Usuario
 {% block main %}
 <div class="container mt-3">
     <h2>Editar Usuario RUT: <span id="formatted-rut">{{ user.RUT }}</span></h2>
-    <form id="edit-user-form">
+    <form id="edit-user-form" method="post">
+        <!-- Hidden field for formatted RUT -->
+        <input id="hidden_formatted_rut" type="hidden" name="hidden_formatted_rut" value="{{ user.RUT }}">
+
         <!-- Hidden field for RUT to identify the user -->
         <input type="hidden" name="rut" value="{{ user.RUT }}">
 
@@ -62,6 +65,7 @@ Editar Usuario
         var rawRut = "{{ user.RUT }}";
         var formattedRut = formatRut(rawRut);
         document.getElementById('formatted-rut').textContent = formattedRut;
+        document.getElementById('hidden_formatted_rut').value = formattedRut;
     });
 </script>
 {% endblock %}
