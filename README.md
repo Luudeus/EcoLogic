@@ -10,10 +10,10 @@
 1. Crea un archivo llamado `.env` en la carpeta raíz, es decir, en la misma donde se encuentra el archivo `app.py`
 2. Escribir los datos de conexión de esta forma:<br>
 ```sql
-DB_HOST={host}<br>
-DB_USER={usuario}<br>
-DB_PASS={contraseña}<br>
-DB_NAME={nombre de la base de datos}<br>
+DB_HOST={host}
+DB_USER={usuario}
+DB_PASS={contraseña}
+DB_NAME={nombre de la base de datos}
 ```
 
 **Imagen de ejemplo:**<br>
