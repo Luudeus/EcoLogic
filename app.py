@@ -83,6 +83,72 @@ def database_user_register(cursor, rut, name, mail, password, permission="normal
     )
     mysql.connection.commit()
 
+def search_books(template_name):
+        # Retrieve query parameters for search, ordering, and pagination
+    search_term = request.args.get("search", default="")
+    order = request.args.get("o", default="titulo")
+    direction = request.args.get("d", default="ASC").upper()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10  # Limit of items per page
+
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Start building the SQL query
+    base_query = "SELECT * FROM Book"
+    where_clause = ""
+    order_clause = ""
+
+    # Add a WHERE clause if a search term is provided
+    if search_term:
+        where_clause = " WHERE titulo LIKE %s"
+
+    # Validate ordering parameters and add ORDER BY clause
+    valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
+    if order in valid_columns and direction in ["ASC", "DESC"]:
+        order_clause = f" ORDER BY {order} {direction}"
+
+    # Pagination clause
+    pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
+
+    # Complete SQL query for books
+    query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
+
+    # Execute the query with parameters if needed
+    try:
+        if search_term:
+            cursor.execute(query, (f"%{search_term}%",))
+        else:
+            cursor.execute(query)
+    except Exception as e:
+        print("Error during query execution:", e)
+
+    # Fetch the results
+    books = cursor.fetchall()
+
+    # Query for total count of books (for pagination)
+    count_query = "SELECT COUNT(*) FROM Book" + where_clause
+    cursor.execute(count_query, (f"%{search_term}%",) if search_term else ())
+    result = cursor.fetchone()
+    print(result)
+    total_books = result["COUNT(*)"] if result else 0
+
+    # Calculate total pages
+    total_pages = (total_books + per_page - 1) // per_page
+
+    cursor.close()
+
+    # Check if the request is an AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify(
+            {"books": books, "total_pages": total_pages, "current_page": page}
+        )
+
+    # Create a Pagination object
+    pagination = Pagination(page=page, per_page=per_page, total_count=total_books)
+
+    # Render the template with the fetched books and pagination data
+    return render_template(f"{template_name}.html", books=books, pagination=pagination)
 
 # Route functions
 @app.route("/")
@@ -226,72 +292,7 @@ def quienes_somos():
 
 @app.route("/biblioteca", methods=["GET"])
 def biblioteca():
-    # Retrieve query parameters for search, ordering, and pagination
-    search_term = request.args.get("search", default="")
-    order = request.args.get("o", default="titulo")
-    direction = request.args.get("d", default="ASC").upper()
-    page = request.args.get("page", 1, type=int)
-    per_page = 10  # Limit of items per page
-
-    # Connect to the database
-    cursor = mysql.connection.cursor()
-
-    # Start building the SQL query
-    base_query = "SELECT * FROM Book"
-    where_clause = ""
-    order_clause = ""
-
-    # Add a WHERE clause if a search term is provided
-    if search_term:
-        where_clause = " WHERE titulo LIKE %s"
-
-    # Validate ordering parameters and add ORDER BY clause
-    valid_columns = ["titulo", "autor", "anio", "genero", "stock"]
-    if order in valid_columns and direction in ["ASC", "DESC"]:
-        order_clause = f" ORDER BY {order} {direction}"
-
-    # Pagination clause
-    pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
-
-    # Complete SQL query for books
-    query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
-
-    # Execute the query with parameters if needed
-    try:
-        if search_term:
-            cursor.execute(query, (f"%{search_term}%",))
-        else:
-            cursor.execute(query)
-    except Exception as e:
-        print("Error during query execution:", e)
-
-    # Fetch the results
-    books = cursor.fetchall()
-
-    # Query for total count of books (for pagination)
-    count_query = "SELECT COUNT(*) FROM Book" + where_clause
-    cursor.execute(count_query, (f"%{search_term}%",) if search_term else ())
-    result = cursor.fetchone()
-    print(result)
-    total_books = result["COUNT(*)"] if result else 0
-
-    # Calculate total pages
-    total_pages = (total_books + per_page - 1) // per_page
-
-    cursor.close()
-
-    # Check if the request is an AJAX request
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify(
-            {"books": books, "total_pages": total_pages, "current_page": page}
-        )
-
-    # Create a Pagination object
-    pagination = Pagination(page=page, per_page=per_page, total_count=total_books)
-
-    # Render the template with the fetched books and pagination data
-    return render_template("biblioteca.html", books=books, pagination=pagination)
-
+    return search_books("biblioteca")
 
 @app.route("/agregar-libros", methods=["GET", "POST"])
 def agregar_libro():
@@ -349,6 +350,10 @@ def agregar_libro():
             "success",
         )
         return render_template("agregar-libros.html")
+
+@app.route("/editar-libros", methods=["GET"])
+def editar_libros():
+    return search_books("editar-libros")
 
 
 @app.route("/agregar-usuarios", methods=["GET", "POST"])
@@ -415,6 +420,74 @@ def agregar_usuarios():
             "success",
         )
         return render_template("agregar-usuarios.html")
+
+
+@app.route("/editar-usuarios", methods=["GET"])
+def editar_usuarios():
+    # Retrieve query parameters for search, ordering, and pagination
+    search_term = request.args.get("search", default="")
+    order = request.args.get("o", default="nombre")
+    direction = request.args.get("d", default="ASC").upper()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10  # Limit of items per page
+
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Start building the SQL query
+    base_query = "SELECT RUT, nombre, correo, permisos FROM User"
+    where_clause = ""
+    order_clause = ""
+
+    # Add a WHERE clause if a search term is provided
+    if search_term:
+        where_clause = " WHERE nombre LIKE %s OR correo LIKE %s"
+
+    # Validate ordering parameters and add ORDER BY clause
+    valid_columns = ["rut", "nombre", "correo", "permisos"]
+    if order in valid_columns and direction in ["ASC", "DESC"]:
+        order_clause = f" ORDER BY {order} {direction}"
+
+    # Pagination clause
+    pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
+
+    # Complete SQL query for users
+    query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
+
+    # Execute the query with parameters if needed
+    try:
+        if search_term:
+            cursor.execute(query, (f"%{search_term}%", f"%{search_term}%"))
+        else:
+            cursor.execute(query)
+    except Exception as e:
+        print("Error during query execution:", e)
+
+    # Fetch the results
+    users = cursor.fetchall()
+
+    # Query for total count of users (for pagination)
+    count_query = "SELECT COUNT(*) FROM User" + where_clause
+    cursor.execute(count_query, (f"%{search_term}%", f"%{search_term}%") if search_term else ())
+    result = cursor.fetchone()
+    total_users = result["COUNT(*)"] if result else 0
+
+    # Calculate total pages
+    total_pages = (total_users + per_page - 1) // per_page
+
+    cursor.close()
+
+    # Check if the request is an AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify(
+            {"users": users, "total_pages": total_pages, "current_page": page}
+        )
+
+    # Create a Pagination object
+    pagination = Pagination(page=page, per_page=per_page, total_count=total_users)
+
+    # Render the template with fetched users and pagination data
+    return render_template("editar-usuarios.html", users=users, pagination=pagination)
 
 
 if __name__ == "__main__":

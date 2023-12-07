@@ -72,7 +72,7 @@ Biblioteca
         // Add event listener to search bar
         var searchInput = document.getElementById("search-input");
         searchInput.addEventListener("keypress", function(event) {
-            // Check is key pressed is 'Enter'
+            // Check if key pressed is 'Enter'
             if (event.key === "Enter") {
                 event.preventDefault(); // Avoid Enter default behaviors
                 applySearch(); // Call applySearch function
@@ -82,13 +82,12 @@ Biblioteca
 
     document.addEventListener('click', function(event) {
         if (event.target.matches('.page-link')) {
-            event.preventDefault(); // Evita que el enlace recargue la página
+            event.preventDefault(); // Avoid link reloading the page
             const newUrl = event.target.href;
-    
-            // Actualiza la URL en la barra de direcciones
+            // Update URL
             history.pushState(null, '', newUrl);
     
-            // Realiza la solicitud AJAX con la nueva URL
+            // Make an AJAX call with new URL
             fetch(newUrl, {
                 method: 'GET',
                 headers: {
@@ -112,21 +111,7 @@ Biblioteca
         var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}`;
 
         history.pushState(null, '', newUrl);
-
-        fetch(newUrl, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            updateTable(data.books);
-            updatePagination(data.total_pages, data.current_page);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        fetchDataAndUpdate(newUrl);
     }
 
     function updateTable(books) {
@@ -151,27 +136,14 @@ Biblioteca
         var urlParams = new URLSearchParams(window.location.search);
         var searchTerm = urlParams.get('search') || '';
 
-        // Build new URL including both and order parameters
+        // Build new URL including both search and order parameters
         var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
 
         // Update URL
         history.pushState(null, '', newUrl);
 
         // Make the AJAX call
-        fetch(newUrl, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            updateTable(data.books);
-            updatePagination(data.total_pages, data.current_page);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        fetchDataAndUpdate(newUrl);
     }
    
     function clearSearch() {
@@ -179,7 +151,7 @@ Biblioteca
     
         history.pushState(null, '', newUrl);
     
-        // Realizar la solicitud AJAX para recargar los datos
+        // Make the AJAX call to reload data
         fetch(newUrl, {
             method: 'GET',
             headers: {
@@ -190,9 +162,9 @@ Biblioteca
         .then(data => {
             updateTable(data.books);
             updatePagination(data.total_pages, data.current_page);
-            // Limpiar el campo de búsqueda
+            // Clean search field
             document.getElementById("search-input").value = "";
-            // Restablecer los selectores de ordenación a sus valores predeterminados
+            // Set order fields to default values
             document.getElementById("orderSelect").value = "titulo";
             document.getElementById("directionSelect").value = "ASC";
         })
@@ -228,6 +200,23 @@ Biblioteca
     
             paginationContainer.appendChild(pageItem);
         }
+    }
+
+    function fetchDataAndUpdate(url) {
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.books);
+            updatePagination(data.total_pages, data.current_page);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
     
 </script>

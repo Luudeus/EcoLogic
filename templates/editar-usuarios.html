@@ -59,33 +59,33 @@ Editar Usuarios
     </div>  
 
     <!-- Pagination buttons -->
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            <!-- Pagination items will be dynamically inserted here -->
-        </ul>
-    </nav>
+    {{ render_pagination(pagination) }}
 </div>
 
 <script>
+    // Load users when page is loaded
     document.addEventListener('DOMContentLoaded', function() {
-        // Llamada inicial para cargar los usuarios
-        updateTable(); // Asumiendo que obtendrás los datos de los usuarios de alguna manera
-    
-        // Agregar evento de escucha a la barra de búsqueda
+        // Call updateTable initial users
+        updateTable({{ users|tojson }});
+        // Add event listener to search bar
         var searchInput = document.getElementById("search-input");
         searchInput.addEventListener("keypress", function(event) {
+            // Check if key pressed is 'Enter'
             if (event.key === "Enter") {
-                event.preventDefault();
-                applySearch();
+                event.preventDefault(); // Avoid Enter default behaviors
+                applySearch(); // Call applySearch function
             }
         });
     });
     
     document.addEventListener('click', function(event) {
         if (event.target.matches('.page-link')) {
-            event.preventDefault();
+            event.preventDefault(); // Avoid link reloading the page
             const newUrl = event.target.href;
+            // Update URL
             history.pushState(null, '', newUrl);
+
+            // Make an AJAX call with new URL
             fetch(newUrl, {
                 method: 'GET',
                 headers: {
@@ -106,6 +106,7 @@ Editar Usuarios
     function applySearch() {
         var searchTerm = document.getElementById("search-input").value;
         var newUrl = `/editar-usuarios?search=${encodeURIComponent(searchTerm)}`;
+
         history.pushState(null, '', newUrl);
         fetchDataAndUpdate(newUrl);
     }
@@ -113,35 +114,67 @@ Editar Usuarios
     function updateTable(users) {
         var tableBody = document.getElementById("users-table").getElementsByTagName("tbody")[0];
         tableBody.innerHTML = "";
+
         users.forEach(user => {
             var row = tableBody.insertRow();
-            row.insertCell(0).textContent = user.rut;
+            row.insertCell(0).textContent = user.RUT;
             row.insertCell(1).textContent = user.nombre;
             row.insertCell(2).textContent = user.correo;
             row.insertCell(3).textContent = user.permisos;
-            // Aquí puedes agregar la celda de acciones si es necesario
+            // Add actions cell if needed
         });
     }
     
     function applyOrder() {
         var selectedOrder = document.getElementById("orderSelect").value;
         var selectedDirection = document.getElementById("directionSelect").value;
+
+        // Get the current URL search term
         var urlParams = new URLSearchParams(window.location.search);
         var searchTerm = urlParams.get('search') || '';
+
+        // Build new URL including both search and order parameters
         var newUrl = `/editar-usuarios?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
+
+        // Update URL
         history.pushState(null, '', newUrl);
+
+        // Make the AJAX call
         fetchDataAndUpdate(newUrl);
     }
     
     function clearSearch() {
         var newUrl = `/editar-usuarios`;
+
         history.pushState(null, '', newUrl);
-        fetchDataAndUpdate(newUrl);
+
+        // Make the AJAX call to reload data
+        fetch(newUrl, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.users);
+            updatePagination(data.total_pages, data.current_page);
+            // Clean search field
+            document.getElementById("search-input").value = "";
+            // Set order fields to default values
+            document.getElementById("orderSelect").value = "nombre";
+            document.getElementById("directionSelect").value = "ASC";
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
     
     function updatePagination(totalPages, currentPage) {
         const paginationContainer = document.querySelector('.pagination');
-        paginationContainer.innerHTML = '';
+        paginationContainer.innerHTML = ''; // Clear existing pagination buttons
+
+        // Include current search and order parameters in the pagination links
         const urlParams = new URLSearchParams(window.location.search);
         const searchTerm = urlParams.get('search') || '';
         const order = urlParams.get('o') || 'nombre';
@@ -158,6 +191,7 @@ Editar Usuarios
             const pageItem = document.createElement('li');
             pageItem.className = i === currentPage ? 'page-item active' : 'page-item';
             pageItem.appendChild(pageLink);
+
             paginationContainer.appendChild(pageItem);
         }
     }
@@ -180,3 +214,22 @@ Editar Usuarios
     }    
 </script>
 {% endblock %}
+
+
+{% macro render_pagination(pagination) %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% for p in pagination.iter_pages() %}
+                {% if p %}
+                    {% if p != pagination.page %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('editar_usuarios', page=p) }}">{{ p }}</a></li>
+                    {% else %}
+                        <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+{% endmacro %}
