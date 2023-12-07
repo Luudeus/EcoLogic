@@ -22,3 +22,16 @@ def logged_in_redirect(f):
             return redirect("/")
         return f(*args, **kwargs)
     return decorated_function
+
+def admin_required(f):
+    """
+    Decorate routes to require admin permissions.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("user_id"):
+            return redirect("/")
+        elif session.get("permission_type") != "bibliotecario":
+            return redirect("/")
+        return f(*args, **kwargs)
+    return decorated_function
