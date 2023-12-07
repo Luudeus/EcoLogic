@@ -33,12 +33,12 @@ INSERT INTO Book (titulo, autor, anio, genero, stock) VALUES
 ('Cien Años de Soledad', 'Gabriel García Márquez', 1967, 'Novela', 10),
 ('1984', 'George Orwell', 1949, 'Distopía', 15),
 ('El Principito', 'Antoine de Saint-Exupéry', 1943, 'Fábula', 20),
-('Don Quijote de la Mancha', 'Miguel de Cervantes', 1605, 'Novela', 5),
-('Hamlet', 'William Shakespeare', 1609, 'Tragedia', 10),
+('Don Quijote de la Mancha', 'Miguel de Cervantes', 1905, 'Novela', 5),
+('Hamlet', 'William Shakespeare', 1900, 'Tragedia', 10),
 ('El Hobbit', 'J.R.R. Tolkien', 1937, 'Fantasía', 12),
 ('Orgullo y Prejuicio', 'Jane Austen', 1813, 'Novela', 8),
 ('To Kill a Mockingbird', 'Harper Lee', 1960, 'Novela', 10),
-('La Divina Comedia', 'Dante Alighieri', 1320, 'Poesía Épica', 7),
+('La Divina Comedia', 'Dante Alighieri', 1902, 'Poesía Épica', 7),
 ('Moby Dick', 'Herman Melville', 1851, 'Novela', 9),
 ('El Gran Gatsby', 'F. Scott Fitzgerald', 1925, 'Novela', 14),
 ('Guerra y Paz', 'León Tolstói', 1869, 'Novela', 6),
@@ -50,6 +50,7 @@ INSERT INTO Book (titulo, autor, anio, genero, stock) VALUES
 ('Crimen y Castigo', 'Fiódor Dostoievski', 1866, 'Novela', 7),
 ('Anna Karenina', 'León Tolstói', 1877, 'Novela', 5),
 ('El guardián entre el centeno', 'J.D. Salinger', 1951, 'Novela', 11);
+
 
 
 
