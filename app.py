@@ -358,6 +358,86 @@ def agregar_libro():
 def editar_libros():
     return search_books("editar-libros")
 
+@app.route("/edit-book", methods=["GET", "POST"])
+@admin_required
+def edit_book():
+    if request.method == "GET":
+        # Get the book ID from the query parameter
+        book_id = request.args.get("id")
+        if not book_id:
+            flash("No se proporcionó la ID del libro", "warning")
+            return redirect(url_for("editar_libros"))
+
+        # Connect to the database
+        cursor = mysql.connection.cursor()
+
+        # Retrieve the book's data
+        try:
+            cursor.execute("SELECT id_book, titulo, autor, anio, genero, stock FROM Book WHERE id_book = %s", (book_id,))
+            book = cursor.fetchone()
+        except Exception as e:
+            print("No se pudieron obtener los datos del libro:", e)
+            flash("No se pudieron obtener los datos del libro", "warning")
+            return redirect(url_for("editar_libros"))
+
+        cursor.close()
+
+        # Check if the book exists
+        if not book:
+            flash("Libro no encontrado", "warning")
+            return redirect(url_for("editar_libros"))
+
+        # Render the edit-book.html template passing the book's data
+        return render_template("edit-book.html", book=book)
+    else:
+        # POST request logic for updating book details
+        try:
+            # Retrieve the book ID and form data
+            book_id = request.form.get("id_book")
+            titulo = request.form.get("titulo")
+            autor = request.form.get("autor")
+            anio = request.form.get("anio")
+            genero = request.form.get("genero")
+            stock = request.form.get("stock")
+            
+            # Check if the book exists
+            cursor = mysql.connection.cursor()
+            cursor.execute("SELECT id_book FROM Book WHERE id_book = %s", (book_id,))
+            if cursor.fetchone() is None:
+                cursor.close()
+                flash("Libro no encontrado", "warning")
+                return redirect(url_for("editar_libros"))
+
+            # Update the book's data
+            update_query = """
+                UPDATE Book
+                SET titulo = %s, autor = %s, anio = %s, genero = %s, stock = %s
+                WHERE id_book = %s
+            """
+            cursor.execute(update_query, (titulo, autor, anio, genero, stock, book_id))
+            mysql.connection.commit()
+            cursor.close()
+            flash(f"Los datos del libro ID: {book_id} han sido actualizados", "success")
+            return redirect(url_for("editar_libros"))
+
+        except Exception as e1:
+            print("Error al actualizar el libro:", e1)
+            
+            # Connect to the database
+            cursor = mysql.connection.cursor()
+
+            # Retrieve the book's data
+            try:
+                cursor.execute("SELECT id_book, titulo, autor, anio, genero, stock FROM Book WHERE id_book = %s", (book_id,))
+                book = cursor.fetchone()
+            except Exception as e2:
+                print("No se pudieron obtener los datos del libro:", e2)
+                return redirect(url_for("editar_libros"))
+
+            cursor.close()
+            flash("Error al actualizar el libro", "warning")
+            return render_template("edit-book.html", book=book)
+        
 
 @app.route("/agregar-usuarios", methods=["GET", "POST"])
 @admin_required
@@ -503,7 +583,7 @@ def edit_user():
         user_rut = request.args.get("id")
         if not user_rut:
             flash("No se proporcionó el RUT", "warning")
-            return render_template("editar_usuarios.html")
+            return redirect(url_for("editar_usuarios"))
 
         # Connect to the database
         cursor = mysql.connection.cursor()
@@ -515,14 +595,14 @@ def edit_user():
         except Exception as e:
             print("No se pudieron obtener los datos del usuario:", e)
             flash("No se pudieron obtener los datos del usuario", "warning")
-            return render_template("editar_usuarios.html")
+            return redirect(url_for("editar_usuarios"))
 
         cursor.close()
 
         # Check if the user exists
         if not user:
             flash("Usuario no encontrado", "warning")
-            return render_template("editar_usuarios.html")
+            return redirect(url_for("editar_usuarios"))
 
         # Render the edit-user.html template passing the user's data
         return render_template("edit-user.html", user=user)
@@ -587,7 +667,7 @@ def delete_user():
     user_rut = request.args.get("id")
     if not user_rut:
         flash("No se proporcionó el RUT", "warning")
-        return redirect(url_for("editar_usuarios"))
+        return redirect(url_for("editar-usuarios"))
 
     print(user_rut)
     
@@ -601,11 +681,11 @@ def delete_user():
     except Exception as e:
         print("No se pudo eliminar el usuario:", e)
         flash("No se pudo eliminar el usuario", "warning")
-        return render_template("editar_usuarios.html")
+        return render_template("editar-usuarios.html")
     cursor.close()
     
     flash(f"Se eliminó el usuario RUT: {rut_format(user_rut)}", "success")
-    return redirect(url_for("editar_usuarios"))
+    return redirect(url_for("editar-usuarios"))
 
 
 if __name__ == "__main__":
