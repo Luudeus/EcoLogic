@@ -3,6 +3,7 @@ import os
 from user_validation.user_data_format import *
 from user_validation.user_login_validator import *
 from user_validation.user_register_validator import *
+from user_validation.rut_format import rut_format
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -577,6 +578,33 @@ def edit_user():
             cursor.close()
             flash("Error al actualizar el usuario", "warning")
             return render_template("edit-user.html", user=user)
+
+
+@app.route("/delete-user", methods=["GET"])
+@admin_required
+def delete_user():
+    # Get the RUT from the query parameter
+    user_rut = request.args.get("id")
+    if not user_rut:
+        flash("No se proporcionó el RUT", "warning")
+        return render_template("editar_usuarios.html")
+
+    
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Delete the user by RUT
+    try:
+        cursor.execute("DELETE FROM User WHERE RUT = %s", (user_rut,))
+    except Exception as e:
+        print("No se pudo eliminar el usuario:", e)
+        flash("No se pudo eliminar el usuario", "warning")
+        return render_template("editar_usuarios.html")
+
+    cursor.close()
+    
+    flash(f"Se eliminó el usuario RUT: {rut_format(user_rut)}", "success")
+    return redirect(url_for("editar_usuarios"))
 
 
 if __name__ == "__main__":
