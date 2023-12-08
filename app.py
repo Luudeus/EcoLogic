@@ -131,7 +131,6 @@ def search_books(template_name):
     count_query = "SELECT COUNT(*) FROM Book" + where_clause
     cursor.execute(count_query, (f"%{search_term}%",) if search_term else ())
     result = cursor.fetchone()
-    print(result)
     total_books = result["COUNT(*)"] if result else 0
 
     # Calculate total pages
@@ -439,6 +438,32 @@ def edit_book():
             return render_template("edit-book.html", book=book)
         
 
+@app.route("/delete-book", methods=["GET"])
+@admin_required
+def delete_book():
+    # Get the book ID from the query parameter
+    book_id = request.args.get("id")
+    if not book_id:
+        flash("No se proporcionó la ID del libro", "warning")
+        return redirect(url_for("editar_libros"))
+    
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Delete the book by book id
+    try:
+        cursor.execute("DELETE FROM Book WHERE id_book = %s", (book_id,))
+        mysql.connection.commit()
+    except Exception as e:
+        print("No se pudo eliminar el libro:", e)
+        flash("No se pudo eliminar el libro", "warning")
+        return render_template("editar-libros.html")
+    cursor.close()
+    
+    flash(f"Se eliminó el libro ID: {book_id}", "success")
+    return redirect(url_for("editar_libros"))
+        
+
 @app.route("/agregar-usuarios", methods=["GET", "POST"])
 @admin_required
 def agregar_usuarios():
@@ -667,9 +692,7 @@ def delete_user():
     user_rut = request.args.get("id")
     if not user_rut:
         flash("No se proporcionó el RUT", "warning")
-        return redirect(url_for("editar-usuarios"))
-
-    print(user_rut)
+        return redirect(url_for("editar_usuarios"))
     
     # Connect to the database
     cursor = mysql.connection.cursor()
@@ -685,7 +708,7 @@ def delete_user():
     cursor.close()
     
     flash(f"Se eliminó el usuario RUT: {rut_format(user_rut)}", "success")
-    return redirect(url_for("editar-usuarios"))
+    return redirect(url_for("editar_usuarios"))
 
 
 if __name__ == "__main__":
