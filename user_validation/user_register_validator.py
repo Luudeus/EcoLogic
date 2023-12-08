@@ -77,6 +77,10 @@ def is_email_complex(email):
         bool: True if the email meets complexity requirements, False otherwise.
 
     """
+    # Check if email is None
+    if email is None or not isinstance(email, str):
+        return False
+    
     # Check if the email contains only one "@" character
     if email.count("@") != 1:
         return False

@@ -587,8 +587,9 @@ def delete_user():
     user_rut = request.args.get("id")
     if not user_rut:
         flash("No se proporcionó el RUT", "warning")
-        return render_template("editar_usuarios.html")
+        return redirect(url_for("editar_usuarios"))
 
+    print(user_rut)
     
     # Connect to the database
     cursor = mysql.connection.cursor()
@@ -596,11 +597,11 @@ def delete_user():
     # Delete the user by RUT
     try:
         cursor.execute("DELETE FROM User WHERE RUT = %s", (user_rut,))
+        mysql.connection.commit()
     except Exception as e:
         print("No se pudo eliminar el usuario:", e)
         flash("No se pudo eliminar el usuario", "warning")
         return render_template("editar_usuarios.html")
-
     cursor.close()
     
     flash(f"Se eliminó el usuario RUT: {rut_format(user_rut)}", "success")
