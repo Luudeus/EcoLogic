@@ -24,13 +24,13 @@ Préstamos
             </div>
             <div class="col-auto">
                 <select class="form-select" id="orderSelect" onchange="applyOrder()">
-                    <option value="order_id" selected>ID Préstamo</option>
-                    <option value="RUT_User">RUT Usuario</option>
-                    <option value="id_book">ID Libro</option>
-                    <option value="titulo">Título</option>
-                    <option value="fecha_entrega">Fecha Entrega</option>
-                    <option value="fecha_devolucion">Fecha Devolución</option>
-                    <option value="estado">Estado</option>
+                    <option value="L.order_id" selected>ID Préstamo</option>
+                    <option value="L.RUT_User">RUT Usuario</option>
+                    <option value="L.id_book">ID Libro</option>
+                    <option value="B.titulo">Título</option>
+                    <option value="L.fecha_entrega">Fecha Entrega</option>
+                    <option value="L.fecha_devolucion">Fecha Devolución</option>
+                    <option value="L.estado">Estado</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -113,7 +113,7 @@ Préstamos
 
     function applySearch() {
         var searchTerm = document.getElementById("search-input").value;
-        var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}`;
+        var newUrl = `/ver-prestamos?search=${encodeURIComponent(searchTerm)}`;
 
         history.pushState(null, '', newUrl);
         fetchDataAndUpdate(newUrl);
@@ -126,12 +126,12 @@ Préstamos
         loans.forEach(loan => {
             var row = tableBody.insertRow();
             row.insertCell(0).textContent = loan.order_id;
-            row.insertCell(1).textContent = loan.RUT_User;
+            row.insertCell(1).textContent = formatRut(loan.RUT_User);
             row.insertCell(2).textContent = loan.id_book;
             row.insertCell(3).textContent = loan.titulo;
             row.insertCell(4).textContent = loan.fecha_entrega;
             row.insertCell(5).textContent = loan.fecha_devolucion;
-            row.insertCell(6).textContent = loan.estadp;
+            row.insertCell(6).textContent = loan.estado;
 
             // Action cell
             var actionsCell = row.insertCell(7);
@@ -164,7 +164,7 @@ Préstamos
         var searchTerm = urlParams.get('search') || '';
 
         // Build new URL including both search and order parameters
-        var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
+        var newUrl = `/ver-prestamos?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
 
         // Update URL
         history.pushState(null, '', newUrl);
@@ -174,7 +174,7 @@ Préstamos
     }
    
     function clearSearch() {
-        var newUrl = `/biblioteca`;
+        var newUrl = `/ver-prestamos`;
     
         history.pushState(null, '', newUrl);
     
@@ -245,6 +245,31 @@ Préstamos
             console.error('Error:', error);
         });
     }
+
+    function formatRut(rut) {
+        var cleanedRut = rut.replace(/[^0-9kK]/g, "").replace(/k/g, "K");
+    
+        if (cleanedRut !== '' && cleanedRut.length > 1) {
+            var numericPart = cleanedRut.replace(/\./g, "").replace(/-/g, "");
+            if (numericPart.length > 9) {
+                numericPart = numericPart.slice(0, -1);
+            }
+            var mainPart = numericPart.substring(0, numericPart.length - 1);
+            var formattedRut = "";
+            var i;
+            for (i = mainPart.length - 1; i >= 0; i--) {
+                var digit = mainPart.charAt(i);
+                formattedRut = digit + formattedRut;
+                if ((mainPart.length - i) % 3 === 0 && i !== 0) {
+                    formattedRut = "." + formattedRut;
+                }
+            }
+            var dv = numericPart.substring(numericPart.length - 1);
+            formattedRut += "-" + dv;
+            return formattedRut.substring(0, 12);
+        }
+        return cleanedRut;
+    }
     
 </script>
 {% endblock %}
@@ -256,7 +281,7 @@ Préstamos
             {% for p in pagination.iter_pages() %}
                 {% if p %}
                     {% if p != pagination.page %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('biblioteca', page=p) }}">{{ p }}</a></li>
+                        <li class="page-item"><a class="page-link" href="{{ url_for('ver_prestamos', page=p) }}">{{ p }}</a></li>
                     {% else %}
                         <li class="page-item active"><span class="page-link">{{ p }}</span></li>
                     {% endif %}

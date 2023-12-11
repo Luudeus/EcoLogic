@@ -774,21 +774,22 @@ def ver_prestamos():
             WHERE 
                 L.order_id LIKE %s 
                 OR L.RUT_User LIKE %s 
-                OR L.id_book LIKE %s 
+                OR L.id_book LIKE %s
+                OR B.titulo LIKE %s
                 OR L.fecha_entrega LIKE %s 
                 OR L.fecha_devolucion LIKE %s 
                 OR L.estado LIKE %s
-                OR B.titulo LIKE %s
         """
 
     # Validate ordering parameters and add ORDER BY clause
     valid_columns = [
-        "order_id",
-        "RUT_User," "id_book",
-        "titulo",
-        "fecha_entrega",
-        "fecha_devolucion",
-        "estado",
+        "L.order_id",
+        "L.RUT_User",
+        "L.id_book",
+        "B.titulo",
+        "L.fecha_entrega",
+        "L.fecha_devolucion",
+        "L.estado",
     ]
     if order in valid_columns and direction in ["ASC", "DESC"]:
         order_clause = f" ORDER BY {order} {direction}"
@@ -856,7 +857,7 @@ def ver_prestamos():
     pagination = Pagination(page=page, per_page=per_page, total_count=total_loans)
 
     # Render the template with fetched loans and pagination data
-    return render_template("editar-usuarios.html", loans=loans, pagination=pagination)
+    return render_template("ver-prestamos.html", loans=loans, pagination=pagination)
 
 
 if __name__ == "__main__":
