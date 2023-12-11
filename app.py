@@ -84,6 +84,7 @@ def database_user_register(cursor, rut, name, mail, password, permission="normal
     )
     mysql.connection.commit()
 
+
 def search_books(template_name):
     # Retrieve query parameters for search, ordering, and pagination
     search_term = request.args.get("search", default="")
@@ -105,7 +106,7 @@ def search_books(template_name):
         where_clause = " WHERE titulo LIKE %s"
 
     # Validate ordering parameters and add ORDER BY clause
-    valid_columns = ["id_book","titulo", "autor", "anio", "genero", "stock"]
+    valid_columns = ["id_book", "titulo", "autor", "anio", "genero", "stock"]
     if order in valid_columns and direction in ["ASC", "DESC"]:
         order_clause = f" ORDER BY {order} {direction}"
 
@@ -149,6 +150,7 @@ def search_books(template_name):
 
     # Render the template with the fetched books and pagination data
     return render_template(f"{template_name}.html", books=books, pagination=pagination)
+
 
 # Route functions
 @app.route("/")
@@ -294,6 +296,7 @@ def quienes_somos():
 def biblioteca():
     return search_books("biblioteca")
 
+
 @app.route("/agregar-libros", methods=["GET", "POST"])
 @admin_required
 def agregar_libro():
@@ -352,10 +355,12 @@ def agregar_libro():
         )
         return render_template("agregar-libros.html")
 
+
 @app.route("/editar-libros", methods=["GET"])
 @admin_required
 def editar_libros():
     return search_books("editar-libros")
+
 
 @app.route("/edit-book", methods=["GET", "POST"])
 @admin_required
@@ -372,7 +377,10 @@ def edit_book():
 
         # Retrieve the book's data
         try:
-            cursor.execute("SELECT id_book, titulo, autor, anio, genero, stock FROM Book WHERE id_book = %s", (book_id,))
+            cursor.execute(
+                "SELECT id_book, titulo, autor, anio, genero, stock FROM Book WHERE id_book = %s",
+                (book_id,),
+            )
             book = cursor.fetchone()
         except Exception as e:
             print("No se pudieron obtener los datos del libro:", e)
@@ -398,7 +406,7 @@ def edit_book():
             anio = request.form.get("anio")
             genero = request.form.get("genero")
             stock = request.form.get("stock")
-            
+
             # Check if the book exists
             cursor = mysql.connection.cursor()
             cursor.execute("SELECT id_book FROM Book WHERE id_book = %s", (book_id,))
@@ -421,13 +429,16 @@ def edit_book():
 
         except Exception as e1:
             print("Error al actualizar el libro:", e1)
-            
+
             # Connect to the database
             cursor = mysql.connection.cursor()
 
             # Retrieve the book's data
             try:
-                cursor.execute("SELECT id_book, titulo, autor, anio, genero, stock FROM Book WHERE id_book = %s", (book_id,))
+                cursor.execute(
+                    "SELECT id_book, titulo, autor, anio, genero, stock FROM Book WHERE id_book = %s",
+                    (book_id,),
+                )
                 book = cursor.fetchone()
             except Exception as e2:
                 print("No se pudieron obtener los datos del libro:", e2)
@@ -436,7 +447,7 @@ def edit_book():
             cursor.close()
             flash("Error al actualizar el libro", "warning")
             return render_template("edit-book.html", book=book)
-        
+
 
 @app.route("/delete-book", methods=["GET"])
 @admin_required
@@ -446,7 +457,7 @@ def delete_book():
     if not book_id:
         flash("No se proporcionó la ID del libro", "warning")
         return redirect(url_for("editar_libros"))
-    
+
     # Connect to the database
     cursor = mysql.connection.cursor()
 
@@ -459,10 +470,10 @@ def delete_book():
         flash("No se pudo eliminar el libro", "warning")
         return render_template("editar-libros.html")
     cursor.close()
-    
+
     flash(f"Se eliminó el libro ID: {book_id}", "success")
     return redirect(url_for("editar_libros"))
-        
+
 
 @app.route("/agregar-usuarios", methods=["GET", "POST"])
 @admin_required
@@ -578,7 +589,9 @@ def editar_usuarios():
 
     # Query for total count of users (for pagination)
     count_query = "SELECT COUNT(*) FROM User" + where_clause
-    cursor.execute(count_query, (f"%{search_term}%", f"%{search_term}%") if search_term else ())
+    cursor.execute(
+        count_query, (f"%{search_term}%", f"%{search_term}%") if search_term else ()
+    )
     result = cursor.fetchone()
     total_users = result["COUNT(*)"] if result else 0
 
@@ -615,7 +628,10 @@ def edit_user():
 
         # Retrieve the user's data
         try:
-            cursor.execute("SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s", (user_rut,))
+            cursor.execute(
+                "SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s",
+                (user_rut,),
+            )
             user = cursor.fetchone()
         except Exception as e:
             print("No se pudieron obtener los datos del usuario:", e)
@@ -643,9 +659,12 @@ def edit_user():
 
             # Check if mail's format is correct
             if not is_email_complex(correo):
-                flash("El correo debe estar en un formato correcto. Ejemplo: 'example@example.com'", "warning")
+                flash(
+                    "El correo debe estar en un formato correcto. Ejemplo: 'example@example.com'",
+                    "warning",
+                )
                 raise Exception("El correo no tiene un formato adecuado.")
-            
+
             # Check if the user exists
             cursor = mysql.connection.cursor()
             cursor.execute("SELECT RUT FROM User WHERE RUT = %s", (user_rut,))
@@ -663,18 +682,24 @@ def edit_user():
             cursor.execute(update_query, (nombre, correo, permisos, user_rut))
             mysql.connection.commit()
             cursor.close()
-            flash(f"Los datos del usuario RUT: {formatted_rut} han sido actualizados", "success")
+            flash(
+                f"Los datos del usuario RUT: {formatted_rut} han sido actualizados",
+                "success",
+            )
             return redirect(url_for("editar_usuarios"))
 
         except Exception as e1:
             print("Error al actualizar el usuario:", e1)
-            
+
             # Connect to the database
             cursor = mysql.connection.cursor()
 
             # Retrieve the user's data
             try:
-                cursor.execute("SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s", (user_rut,))
+                cursor.execute(
+                    "SELECT RUT, nombre, correo, permisos FROM User WHERE RUT = %s",
+                    (user_rut,),
+                )
                 user = cursor.fetchone()
             except Exception as e2:
                 print("No se pudieron obtener los datos del usuario:", e2)
@@ -693,7 +718,7 @@ def delete_user():
     if not user_rut:
         flash("No se proporcionó el RUT", "warning")
         return redirect(url_for("editar_usuarios"))
-    
+
     # Connect to the database
     cursor = mysql.connection.cursor()
 
@@ -706,9 +731,132 @@ def delete_user():
         flash("No se pudo eliminar el usuario", "warning")
         return render_template("editar-usuarios.html")
     cursor.close()
-    
+
     flash(f"Se eliminó el usuario RUT: {rut_format(user_rut)}", "success")
     return redirect(url_for("editar_usuarios"))
+
+
+@app.route("/ver-prestamos", methods=["GET"])
+@admin_required
+def ver_prestamos():
+    # Retrieve query parameters for search, ordering, and pagination
+    search_term = request.args.get("search", default="")
+    order = request.args.get("o", default="order_id")
+    direction = request.args.get("d", default="ASC").upper()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10  # Limit of items per page
+
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Start building the SQL query
+    base_query = """
+    SELECT 
+        L.order_id, 
+        L.RUT_User, 
+        L.id_book, 
+        B.titulo,
+        L.fecha_entrega, 
+        L.fecha_devolucion, 
+        L.estado 
+    FROM 
+        Lending L
+    JOIN 
+        Book B ON L.id_book = B.id_book
+"""
+
+    where_clause = ""
+    order_clause = ""
+
+    # Add a WHERE clause if a search term is provided
+    if search_term:
+        where_clause = """
+            WHERE 
+                L.order_id LIKE %s 
+                OR L.RUT_User LIKE %s 
+                OR L.id_book LIKE %s 
+                OR L.fecha_entrega LIKE %s 
+                OR L.fecha_devolucion LIKE %s 
+                OR L.estado LIKE %s
+                OR B.titulo LIKE %s
+        """
+
+    # Validate ordering parameters and add ORDER BY clause
+    valid_columns = [
+        "order_id",
+        "RUT_User," "id_book",
+        "titulo",
+        "fecha_entrega",
+        "fecha_devolucion",
+        "estado",
+    ]
+    if order in valid_columns and direction in ["ASC", "DESC"]:
+        order_clause = f" ORDER BY {order} {direction}"
+
+    # Pagination clause
+    pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
+
+    # Complete SQL query for loans
+    query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
+
+    # Execute the query with parameters if needed
+    try:
+        if search_term:
+            cursor.execute(
+                query,
+                (
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                ),
+            )
+        else:
+            cursor.execute(query)
+    except Exception as e:
+        print("Error during query execution:", e)
+
+    # Fetch the results
+    loans = cursor.fetchall()
+
+    # Query for total count of loans (for pagination)
+    count_query = "SELECT COUNT(*) FROM User" + where_clause
+    cursor.execute(
+        count_query,
+        (
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+        )
+        if search_term
+        else (),
+    )
+    result = cursor.fetchone()
+    total_loans = result["COUNT(*)"] if result else 0
+
+    # Calculate total pages
+    total_pages = (total_loans + per_page - 1) // per_page
+
+    cursor.close()
+
+    # Check if the request is an AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify(
+            {"loans": loans, "total_pages": total_pages, "current_page": page}
+        )
+
+    # Create a Pagination object
+    pagination = Pagination(page=page, per_page=per_page, total_count=total_loans)
+
+    # Render the template with fetched loans and pagination data
+    return render_template("editar-usuarios.html", loans=loans, pagination=pagination)
 
 
 if __name__ == "__main__":
