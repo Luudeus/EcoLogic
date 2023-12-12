@@ -151,9 +151,11 @@ Ver Préstamos
 
             // Delete button
             var deleteButton = document.createElement('a');
-            deleteButton.href = `/delete-loan?id=${loan.order_id}`;
             deleteButton.textContent = 'Eliminar';
             deleteButton.classList.add('btn', 'btn-danger');
+            deleteButton.onclick = function() {
+                confirmDelete(loan.order_id);
+            };
             actionsCell.appendChild(deleteButton);
         });
     }
@@ -272,6 +274,13 @@ Ver Préstamos
             return formattedRut.substring(0, 12);
         }
         return cleanedRut;
+    }
+
+    function confirmDelete(loanId) {
+        var confirmation = confirm("¿Estás seguro de que deseas eliminar este préstamo?");
+        if (confirmation) {
+            window.location.href = `/delete-loan?id=${loanId}`;
+        }
     }
     
 </script>
