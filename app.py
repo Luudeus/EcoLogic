@@ -3,6 +3,7 @@ import os
 from user_validation.user_data_format import *
 from user_validation.user_login_validator import *
 from user_validation.user_register_validator import *
+from datetime import datetime
 from user_validation.rut_format import rut_format
 from dotenv import load_dotenv
 from flask import (
@@ -823,6 +824,11 @@ def ver_prestamos():
     # Fetch the results
     loans = cursor.fetchall()
 
+    # Format dates
+    for loan in loans:
+        loan["fecha_entrega"] = loan["fecha_entrega"].strftime("%d-%m-%Y")
+        loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
+    
     # Query for total count of loans (for pagination)
     count_query = "SELECT COUNT(*) FROM User" + where_clause
     cursor.execute(
