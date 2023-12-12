@@ -827,7 +827,8 @@ def ver_prestamos():
     # Format dates
     for loan in loans:
         loan["fecha_entrega"] = loan["fecha_entrega"].strftime("%d-%m-%Y")
-        loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
+        if loan["fecha_devolucion"]:
+            loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
     
     # Query for total count of loans (for pagination)
     count_query = "SELECT COUNT(*) FROM Lending" + where_clause
@@ -1061,7 +1062,8 @@ def mis_prestamos():
     # Format dates
     for loan in loans:
         loan["fecha_entrega"] = loan["fecha_entrega"].strftime("%d-%m-%Y")
-        loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
+        if loan["fecha_devolucion"]:
+            loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
     
     # Query for total count of loans (for pagination)
     count_query = "SELECT COUNT(*) FROM Lending" + where_clause
