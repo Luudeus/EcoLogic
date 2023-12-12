@@ -866,5 +866,118 @@ def ver_prestamos():
     return render_template("ver-prestamos.html", loans=loans, pagination=pagination)
 
 
+@app.route("/edit-loan", methods=["GET", "POST"])
+@admin_required
+def edit_loan():
+    if request.method == "GET":
+        # Get the loan ID from the query parameter
+        loan_id = request.args.get("id")
+        if not loan_id:
+            flash("No se proporcionó la ID del préstamo", "warning")
+            return redirect(url_for("ver_prestamos"))
+
+        # Connect to the database
+        cursor = mysql.connection.cursor()
+
+        # Retrieve the loan's data
+        try:
+            cursor.execute(
+                """
+                SELECT 
+                    L.order_id,
+                    L.fecha_entrega, 
+                    L.fecha_devolucion, 
+                    L.estado,
+                    B.titulo
+                FROM 
+                    Lending L
+                JOIN 
+                    Book B ON L.id_book = B.id_book
+                WHERE 
+                    L.order_id = %s
+                """,
+                (loan_id,),
+            )
+            loan = cursor.fetchone()
+        except Exception as e:
+            print("No se pudieron obtener los datos del prestamo:", e)
+            flash("No se pudieron obtener los datos del prestamo", "warning")
+            return redirect(url_for("ver_prestamos"))
+
+        cursor.close()
+
+        # Check if the loan exists
+        if not loan:
+            flash("Préstamo no encontrado", "warning")
+            return redirect(url_for("ver_prestamos"))
+
+        # Render the edit-loan.html template passing the loan's data
+        return render_template("edit-loan.html", loan=loan)
+    else:
+        # POST request logic for updating loan details
+        try:
+            # Retrieve the loan ID and form data
+            loan_id = request.form.get("order_id")
+            fecha_entrega = request.form.get("fecha_entrega")
+            fecha_devolucion = request.form.get("fecha_devolucion")
+            estado = request.form.get("estado")
+            
+            print(loan_id)
+
+            # Check if the loan exists
+            cursor = mysql.connection.cursor()
+            cursor.execute("SELECT order_id FROM Lending WHERE order_id = %s", (loan_id,))
+            if cursor.fetchone() is None:
+                cursor.close()
+                flash("Préstamo no encontrado", "warning")
+                return redirect(url_for("ver_prestamos"))
+
+            # Update the loan's data
+            update_query = """
+                UPDATE Lending
+                SET fecha_entrega = %s, fecha_devolucion = %s, estado = %s
+                WHERE order_id = %s
+            """
+            cursor.execute(update_query, (fecha_entrega, fecha_devolucion, estado, loan_id))
+            mysql.connection.commit()
+            cursor.close()
+            flash(f"Los datos del préstamo ID: {loan_id} han sido actualizados", "success")
+            return redirect(url_for("ver_prestamos"))
+
+        except Exception as e1:
+            print("Error al actualizar el préstamo:", e1)
+
+            # Connect to the database
+            cursor = mysql.connection.cursor()
+
+            # Retrieve the loan's data
+            try:
+                cursor.execute(
+                    """
+                    SELECT
+                        L.order_id, 
+                        L.fecha_entrega, 
+                        L.fecha_devolucion, 
+                        L.estado,
+                        B.titulo
+                    FROM 
+                        Lending L
+                    JOIN 
+                        Book B ON L.id_book = B.id_book
+                    WHERE 
+                        L.order_id = %s
+                    """,
+                    (loan_id,),
+                )
+                loan = cursor.fetchone()
+            except Exception as e2:
+                print("No se pudieron obtener los datos del préstamo:", e2)
+                return redirect(url_for("ver_prestamos"))
+
+            cursor.close()
+            flash("Error al actualizar el préstamo", "warning")
+            return render_template("edit-loan.html", loan=loan)
+        
+        
 if __name__ == "__main__":
     app.run(debug=True)
