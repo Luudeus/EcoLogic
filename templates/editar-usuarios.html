@@ -14,7 +14,7 @@ Editar Usuarios
         <form class="col">
             <div class="row g-3 align-items-center">
                 <div class="col">
-                    <input type="text" class="form-control" id="search-input" placeholder="Buscar usuarios...">
+                    <input type="text" class="form-control" id="search-input" placeholder="Buscar usuarios para editar...">
                 </div>
                 <div class="col-auto">
                     <button class="btn btn-primary" type="button" onclick="applySearch()">Buscar</button>
@@ -140,9 +140,11 @@ Editar Usuarios
 
             // Delete button
             var deleteButton = document.createElement('a');
-            deleteButton.href = `/delete-user?id=${user.RUT}`;
             deleteButton.textContent = 'Eliminar';
             deleteButton.classList.add('btn', 'btn-danger');
+            deleteButton.onclick = function() {
+                confirmDelete(user.RUT);
+            };
             actionsCell.appendChild(deleteButton);
         });
     }
@@ -258,6 +260,13 @@ Editar Usuarios
             return formattedRut.substring(0, 12);
         }
         return cleanedRut;
+    }
+
+    function confirmDelete(userId) {
+        var confirmation = confirm("¿Estás seguro de que deseas eliminar este usuario?");
+        if (confirmation) {
+            window.location.href = `/delete-user?id=${userId}`;
+        }
     }
     
 </script>

@@ -14,7 +14,7 @@ Editar Libros
     <form class="col">
         <div class="row g-3 align-items-center">
             <div class="col">
-                <input type="text" class="form-control" id="search-input" name="busqueda" placeholder="Buscar libros...">
+                <input type="text" class="form-control" id="search-input" name="busqueda" placeholder="Buscar libros para editar...">
             </div>
             <div class="col-auto">
                 <button class="btn btn-primary" type="button" onclick="applySearch()">Buscar</button>
@@ -148,9 +148,11 @@ Editar Libros
 
             // Delete button
             var deleteButton = document.createElement('a');
-            deleteButton.href = `/delete-book?id=${book.id_book}`;
             deleteButton.textContent = 'Eliminar';
             deleteButton.classList.add('btn', 'btn-danger');
+            deleteButton.onclick = function() {
+                confirmDelete(user.id_book);
+            };
             actionsCell.appendChild(deleteButton);
         });
     }
@@ -244,6 +246,13 @@ Editar Libros
         .catch(error => {
             console.error('Error:', error);
         });
+    }
+
+    function confirmDelete(bookId) {
+        var confirmation = confirm("¿Estás seguro de que deseas eliminar este libro?");
+        if (confirmation) {
+            window.location.href = `/delete-book?id=${bookId}`;
+        }
     }
     
 </script>
