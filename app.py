@@ -830,7 +830,7 @@ def ver_prestamos():
         loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
     
     # Query for total count of loans (for pagination)
-    count_query = "SELECT COUNT(*) FROM User" + where_clause
+    count_query = "SELECT COUNT(*) FROM Lending" + where_clause
     cursor.execute(
         count_query,
         (
@@ -978,6 +978,126 @@ def edit_loan():
             flash("Error al actualizar el préstamo", "warning")
             return render_template("edit-loan.html", loan=loan)
         
-        
+
+@app.route("/mis-prestamos", methods=["GET"])
+@login_required
+def mis_prestamos():
+    # Retrieve query parameters for search, ordering, and pagination
+    search_term = request.args.get("search", default="")
+    order = request.args.get("o", default="order_id")
+    direction = request.args.get("d", default="ASC").upper()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10  # Limit of items per page
+
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Start building the SQL query
+    base_query = """
+    SELECT 
+        L.order_id, 
+        L.RUT_User, 
+        L.id_book, 
+        B.titulo,
+        L.fecha_entrega, 
+        L.fecha_devolucion, 
+        L.estado 
+    FROM 
+        Lending L
+    JOIN 
+        Book B ON L.id_book = B.id_book
+"""
+
+    where_clause = f" WHERE RUT_User = '{session['user_id']}'"
+    order_clause = ""
+
+    # Add a WHERE clause if a search term is provided
+    if search_term:
+        where_clause += f" AND (L.order_id LIKE %s OR L.RUT_User LIKE %s OR L.id_book LIKE %s OR B.titulo LIKE %s OR L.fecha_entrega LIKE %s OR L.fecha_devolucion LIKE %s OR L.estado LIKE %s)"
+
+
+    # Validate ordering parameters and add ORDER BY clause
+    valid_columns = [
+        "L.order_id",
+        "L.RUT_User",
+        "L.id_book",
+        "B.titulo",
+        "L.fecha_entrega",
+        "L.fecha_devolucion",
+        "L.estado",
+    ]
+    if order in valid_columns and direction in ["ASC", "DESC"]:
+        order_clause = f" ORDER BY {order} {direction}"
+
+    # Pagination clause
+    pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
+
+    # Complete SQL query for loans
+    query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
+
+    # Execute the query with parameters if needed
+    try:
+        if search_term:
+            cursor.execute(
+                query,
+                (
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                    f"%{search_term}%",
+                ),
+            )
+        else:
+            cursor.execute(query)
+    except Exception as e:
+        print("Error during query execution:", e)
+
+    # Fetch the results
+    loans = cursor.fetchall()
+
+    # Format dates
+    for loan in loans:
+        loan["fecha_entrega"] = loan["fecha_entrega"].strftime("%d-%m-%Y")
+        loan["fecha_devolucion"] = loan["fecha_devolucion"].strftime("%d-%m-%Y")
+    
+    # Query for total count of loans (for pagination)
+    count_query = "SELECT COUNT(*) FROM Lending" + where_clause
+    cursor.execute(
+        count_query,
+        (
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%",
+        )
+        if search_term
+        else (),
+    )
+    result = cursor.fetchone()
+    total_loans = result["COUNT(*)"] if result else 0
+
+    # Calculate total pages
+    total_pages = (total_loans + per_page - 1) // per_page
+
+    cursor.close()
+
+    # Check if the request is an AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify(
+            {"loans": loans, "total_pages": total_pages, "current_page": page}
+        )
+
+    # Create a Pagination object
+    pagination = Pagination(page=page, per_page=per_page, total_count=total_loans)
+
+    # Render the template with fetched loans and pagination data
+    return render_template("mis-prestamos.html", loans=loans, pagination=pagination)
+      
 if __name__ == "__main__":
     app.run(debug=True)
