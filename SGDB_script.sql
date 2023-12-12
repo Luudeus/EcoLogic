@@ -28,6 +28,16 @@ CREATE TABLE Lending (
     FOREIGN KEY (id_book) REFERENCES Book(id_book)
 );
 
+CREATE TABLE Solicitud (
+    solicitud_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    RUT_User VARCHAR(10) NOT NULL,
+    id_book INT NOT NULL,
+    titulo_libro VARCHAR(255) NOT NULL,
+    fecha_solicitud DATE,
+    estado VARCHAR(50),
+    FOREIGN KEY (RUT_User) REFERENCES User(RUT),
+    FOREIGN KEY (id_book) REFERENCES Book(id_book)
+);
 
 INSERT INTO Book (titulo, autor, anio, genero, stock) VALUES 
 ('Cien Años de Soledad', 'Gabriel García Márquez', 1967, 'Novela', 10),
@@ -79,22 +89,22 @@ INSERT INTO User (RUT, nombre, correo, permisos, contrasenia) VALUES
 
 INSERT INTO Lending (RUT_User, id_book, fecha_entrega, fecha_devolucion, estado) VALUES 
 ('100122334', 1, '2023-01-01', '2023-01-15', 'Devuelto'),
-('234567890', 2, '2023-01-10', '2023-01-24', 'Prestado'),
+('234567890', 2, '2023-01-10', '', 'Prestado'),
 ('345678901', 3, '2023-02-01', '2023-02-15', 'Devuelto'),
-('456789012', 4, '2023-02-10', '2023-02-24', 'Prestado'),
+('456789012', 4, '2023-02-10', '', 'Prestado'),
 ('567890123', 5, '2023-03-01', '2023-03-15', 'Devuelto'),
-('678901234', 6, '2023-03-10', '2023-03-24', 'Prestado'),
+('678901234', 6, '2023-03-10', '', 'Prestado'),
 ('789012345', 7, '2023-04-01', '2023-04-15', 'Devuelto'),
-('890123456', 8, '2023-04-10', '2023-04-24', 'Prestado'),
+('890123456', 8, '2023-04-10', '', 'Prestado'),
 ('901234567', 9, '2023-05-01', '2023-05-15', 'Devuelto'),
-('012345678', 10, '2023-05-10', '2023-05-24', 'Prestado'),
+('012345678', 10, '2023-05-10', '', 'Prestado'),
 ('112233445', 11, '2023-06-01', '2023-06-15', 'Devuelto'),
-('223344556', 12, '2023-06-10', '2023-06-24', 'Prestado'),
+('223344556', 12, '2023-06-10', '', 'Prestado'),
 ('334455667', 13, '2023-07-01', '2023-07-15', 'Devuelto'),
-('445566778', 14, '2023-07-10', '2023-07-24', 'Prestado'),
+('445566778', 14, '2023-07-10', '', 'Prestado'),
 ('556677889', 15, '2023-08-01', '2023-08-15', 'Devuelto'),
-('667788990', 16, '2023-08-10', '2023-08-24', 'Prestado'),
+('667788990', 16, '2023-08-10', '', 'Prestado'),
 ('778899001', 17, '2023-09-01', '2023-09-15', 'Devuelto'),
-('889900112', 18, '2023-09-10', '2023-09-24', 'Prestado'),
+('889900112', 18, '2023-09-10', '', 'Prestado'),
 ('990011223', 19, '2023-10-01', '2023-10-15', 'Devuelto'),
-('123456789', 20, '2023-10-10', '2023-10-24', 'Prestado');
+('123456789', 20, '2023-10-10', '', 'Prestado');
