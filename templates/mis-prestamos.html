@@ -59,7 +59,7 @@ Mis Préstamos
                     <th scope="col">Fecha Entrega</th>
                     <th scope="col">Fecha Devolución</th>
                     <th scope="col">Estado</th>
-                    <th scope="col">Acciones</th>                    
+                    <th scope="col">Acciones</th>                   
                 </tr>
             </thead>
             <tbody>
@@ -141,6 +141,17 @@ Mis Préstamos
             actionsCell.style.display = "flex";
             actionsCell.style.justifyContent = "center";
             actionsCell.style.gap = "10px"; // This sets the space between the buttons
+
+            // Return book button
+            if (loan.estado == "Prestado"){
+                var returnBookButton = document.createElement('a');
+                returnBookButton.textContent = 'Devolver Libro';
+                returnBookButton.classList.add('btn', 'btn-success');
+                returnBookButton.onclick = function() {
+                    confirmReturnBook(loan.order_id);
+                };
+                actionsCell.appendChild(returnBookButton);
+            }
 
         });
     }
@@ -259,6 +270,13 @@ Mis Préstamos
             return formattedRut.substring(0, 12);
         }
         return cleanedRut;
+    }
+
+    function confirmReturnBook(loanId) {
+        var confirmation = confirm("¿Deseas devolver el libro?");
+        if (confirmation) {
+            window.location.href = `/return-book?id=${loan.order_id}`;
+        }
     }
     
 </script>
