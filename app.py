@@ -1166,10 +1166,10 @@ def ver_prestamos():
 
     # Add a WHERE clause if a search term is provided
     if search_term:
-        where_clause = " WHERE titulo LIKE %s"
+        where_clause = " WHERE solicitud_id LIKE %s OR titulo_libro LIKE %s"
 
     # Validate ordering parameters and add ORDER BY clause
-    valid_columns = ["id_book", "titulo", "autor", "anio", "genero", "stock"]
+    valid_columns = ["solicitud_id", "RUT_User", "id_book", "titulo_libro", "fecha_solicitud"]
     if order in valid_columns and direction in ["ASC", "DESC"]:
         order_clause = f" ORDER BY {order} {direction}"
 
@@ -1182,20 +1182,20 @@ def ver_prestamos():
     # Execute the query with parameters if needed
     try:
         if search_term:
-            cursor.execute(query, (f"%{search_term}%",))
+            cursor.execute(query, (f"%{search_term}%", "%{search_term}%"))
         else:
             cursor.execute(query)
     except Exception as e:
         print("Error during query execution:", e)
 
     # Fetch the results
-    books = cursor.fetchall()
+    requests = cursor.fetchall()
 
-    # Query for total count of books (for pagination)
-    count_query = "SELECT COUNT(*) FROM Book" + where_clause
-    cursor.execute(count_query, (f"%{search_term}%",) if search_term else ())
+    # Query for total count of requests (for pagination)
+    count_query = "SELECT COUNT(*) FROM Solicitud" + where_clause
+    cursor.execute(count_query, (f"%{search_term}%", "%{search_term}%") if search_term else ())
     result = cursor.fetchone()
-    total_books = result["COUNT(*)"] if result else 0
+    total_b = result["COUNT(*)"] if result else 0
 
     # Calculate total pages
     total_pages = (total_books + per_page - 1) // per_page
