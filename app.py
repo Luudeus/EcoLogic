@@ -1100,6 +1100,13 @@ def mis_prestamos():
 
     # Render the template with fetched loans and pagination data
     return render_template("mis-prestamos.html", loans=loans, pagination=pagination)
+
+
+@app.route("/solicitar-prestamo", methods=["GET"])
+@login_required
+def solicitar_prestamo():
+    return search_books("solicitar-prestamo")
+
       
 if __name__ == "__main__":
     app.run(debug=True)

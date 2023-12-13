@@ -41,6 +41,7 @@
                         <li class="nav-item"><a class="nav-link" href="/biblioteca">Biblioteca</a></li>
                         {% if session["permission_type"] == "normal" %}
                             <li class="nav-item"><a class="nav-link" href="/mis-prestamos">Mis Préstamos</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/solicitar-prestamo">Solicitar Préstamo</a></li>
                         {% elif session["permission_type"] == "bibliotecario" %}
                             <li class="nav-item"><a class="nav-link" href="/agregar-libros">Agregar Libros</a></li>
                             <li class="nav-item"><a class="nav-link" href="/editar-libros">Editar Libros</a></li>

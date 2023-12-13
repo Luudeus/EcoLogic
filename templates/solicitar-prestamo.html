@@ -1,20 +1,20 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Mis Préstamos
+Solicitar Préstamo
 {% endblock %}
 
 {% block main %}
 <div class="container mt-4">
-<!-- Header: Mis Préstamos -->
-<h2 class="mb-3 text-start">Mis Préstamos</h2>
+<!-- Header: Solicitar Préstamo -->
+<h2 class="mb-3 text-start">Solicitar Préstamo</h2>
 
 <!-- Search and filter section -->
 <div class="row mb-3 align-items-center">
     <form class="col">
         <div class="row g-3 align-items-center">
             <div class="col">
-                <input type="text" class="form-control" id="search-input" name="busqueda" placeholder="Buscar libros...">
+                <input type="text" class="form-control" id="search-input" name="busqueda" placeholder="Buscar libros para editar...">
             </div>
             <div class="col-auto">
                 <button class="btn btn-primary" type="button" onclick="applySearch()">Buscar</button>
@@ -27,13 +27,12 @@ Mis Préstamos
             </div>
             <div class="col-auto">
                 <select class="form-select" id="orderSelect" onchange="applyOrder()">
-                    <option value="L.order_id" selected>ID Préstamo</option>
-                    <option value="L.RUT_User">RUT Usuario</option>
-                    <option value="L.id_book">ID Libro</option>
-                    <option value="B.titulo">Título</option>
-                    <option value="L.fecha_entrega">Fecha Entrega</option>
-                    <option value="L.fecha_devolucion">Fecha Devolución</option>
-                    <option value="L.estado">Estado</option>
+                    <option value="id_book" selected>ID Libro</option>
+                    <option value="titulo">Título</option>
+                    <option value="autor">Autor</option>
+                    <option value="anio">Año</option>
+                    <option value="genero">Género</option>
+                    <option value="stock">Stock</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -47,23 +46,22 @@ Mis Préstamos
 </div>
 
 
-    <!-- Table of loans -->
+    <!-- Table of books -->
     <div class="table-responsive">
-        <table class="table" id="loans-table">
+        <table class="table" id="books-table">
             <thead>
                 <tr>
-                    <th scope="col">ID Préstamo</th>
-                    <th scope="col">RUT Usuario</th>
                     <th scope="col">ID Libro</th>
                     <th scope="col">Título</th>
-                    <th scope="col">Fecha Entrega</th>
-                    <th scope="col">Fecha Devolución</th>
-                    <th scope="col">Estado</th>
-                    <th scope="col">Acciones</th>                   
+                    <th scope="col">Autor</th>
+                    <th scope="col">Año</th>
+                    <th scope="col">Género</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- The loan entries will be dynamically inserted here by JavaScript -->
+                <!-- The book entries will be dynamically inserted here by JavaScript -->
             </tbody>
         </table>
     </div>  
@@ -73,10 +71,10 @@ Mis Préstamos
 </div>
 
 <script>
-    // Load loans when page is loaded
+    // Load books when page is loaded
     document.addEventListener('DOMContentLoaded', function() {
-        // Call updateTable initial loans
-        updateTable({{ loans|tojson }});
+        // Call updateTable initial books
+        updateTable({{ books|tojson }});
         // Add event listener to search bar
         var searchInput = document.getElementById("search-input");
         searchInput.addEventListener("keypress", function(event) {
@@ -104,7 +102,7 @@ Mis Préstamos
             })
             .then(response => response.json())
             .then(data => {
-                updateTable(data.loans);
+                updateTable(data.books);
                 updatePagination(data.total_pages, data.current_page);
             })
             .catch(error => {
@@ -116,43 +114,41 @@ Mis Préstamos
 
     function applySearch() {
         var searchTerm = document.getElementById("search-input").value;
-        var newUrl = `/ver-prestamos?search=${encodeURIComponent(searchTerm)}`;
+        var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}`;
 
         history.pushState(null, '', newUrl);
         fetchDataAndUpdate(newUrl);
     }
 
-    function updateTable(loans) {
-        var tableBody = document.getElementById("loans-table").getElementsByTagName("tbody")[0];
+    function updateTable(books) {
+        var tableBody = document.getElementById("books-table").getElementsByTagName("tbody")[0];
         tableBody.innerHTML = "";
 
-        loans.forEach(loan => {
+        books.forEach(book => {
             var row = tableBody.insertRow();
-            row.insertCell(0).textContent = loan.order_id;
-            row.insertCell(1).textContent = formatRut(loan.RUT_User);
-            row.insertCell(2).textContent = loan.id_book;
-            row.insertCell(3).textContent = loan.titulo;
-            row.insertCell(4).textContent = loan.fecha_entrega;
-            row.insertCell(5).textContent = loan.fecha_devolucion;
-            row.insertCell(6).textContent = loan.estado;
+            row.insertCell(0).textContent = book.id_book;
+            row.insertCell(1).textContent = book.titulo;
+            row.insertCell(2).textContent = book.autor;
+            row.insertCell(3).textContent = book.anio;
+            row.insertCell(4).textContent = book.genero;
+            row.insertCell(5).textContent = book.stock;
 
             // Action cell
-            var actionsCell = row.insertCell(7);
+            var actionsCell = row.insertCell(6);
             actionsCell.style.display = "flex";
             actionsCell.style.justifyContent = "center";
             actionsCell.style.gap = "10px"; // This sets the space between the buttons
 
-            // Return book button
-            if (loan.estado == "Prestado"){
-                var returnBookButton = document.createElement('a');
-                returnBookButton.textContent = 'Devolver Libro';
-                returnBookButton.classList.add('btn', 'btn-success');
-                returnBookButton.onclick = function() {
-                    confirmReturnBook(loan.order_id);
-                };
-                actionsCell.appendChild(returnBookButton);
-            }
+            // Request book button
 
+            var returnBookButton = document.createElement('a');
+            returnBookButton.textContent = 'Solicitar Préstamo';
+            returnBookButton.classList.add('btn', 'btn-success');
+            returnBookButton.onclick = function() {
+                requestBook(loan.order_id);
+            };
+            actionsCell.appendChild(returnBookButton);
+            }
         });
     }
 
@@ -165,7 +161,7 @@ Mis Préstamos
         var searchTerm = urlParams.get('search') || '';
 
         // Build new URL including both search and order parameters
-        var newUrl = `/ver-prestamos?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
+        var newUrl = `/biblioteca?search=${encodeURIComponent(searchTerm)}&o=${selectedOrder}&d=${selectedDirection}`;
 
         // Update URL
         history.pushState(null, '', newUrl);
@@ -175,7 +171,7 @@ Mis Préstamos
     }
    
     function clearSearch() {
-        var newUrl = `/ver-prestamos`;
+        var newUrl = `/biblioteca`;
     
         history.pushState(null, '', newUrl);
     
@@ -188,12 +184,12 @@ Mis Préstamos
         })
         .then(response => response.json())
         .then(data => {
-            updateTable(data.loans);
+            updateTable(data.books);
             updatePagination(data.total_pages, data.current_page);
             // Clean search field
             document.getElementById("search-input").value = "";
             // Set order fields to default values
-            document.getElementById("orderSelect").value = "order_id";
+            document.getElementById("orderSelect").value = "id_book";
             document.getElementById("directionSelect").value = "ASC";
         })
         .catch(error => {
@@ -239,7 +235,7 @@ Mis Préstamos
         })
         .then(response => response.json())
         .then(data => {
-            updateTable(data.loans);
+            updateTable(data.books);
             updatePagination(data.total_pages, data.current_page);
         })
         .catch(error => {
@@ -247,35 +243,10 @@ Mis Préstamos
         });
     }
 
-    function formatRut(rut) {
-        var cleanedRut = rut.replace(/[^0-9kK]/g, "").replace(/k/g, "K");
-    
-        if (cleanedRut !== '' && cleanedRut.length > 1) {
-            var numericPart = cleanedRut.replace(/\./g, "").replace(/-/g, "");
-            if (numericPart.length > 9) {
-                numericPart = numericPart.slice(0, -1);
-            }
-            var mainPart = numericPart.substring(0, numericPart.length - 1);
-            var formattedRut = "";
-            var i;
-            for (i = mainPart.length - 1; i >= 0; i--) {
-                var digit = mainPart.charAt(i);
-                formattedRut = digit + formattedRut;
-                if ((mainPart.length - i) % 3 === 0 && i !== 0) {
-                    formattedRut = "." + formattedRut;
-                }
-            }
-            var dv = numericPart.substring(numericPart.length - 1);
-            formattedRut += "-" + dv;
-            return formattedRut.substring(0, 12);
-        }
-        return cleanedRut;
-    }
-
-    function confirmReturnBook(loanId) {
-        var confirmation = confirm(`¿Deseas devolver el libro ID: ${loan.order_id}?`);
+    function requestBook(loanId) {
+        var confirmation = confirm(`¿Deseas solicitar el libro ID: ${loan.order_id}?`);
         if (confirmation) {
-            window.location.href = `/return-book?id=${loan.order_id}`;
+            window.location.href = `/request-book?id=${loan.order_id}`;
         }
     }
     
@@ -289,7 +260,7 @@ Mis Préstamos
             {% for p in pagination.iter_pages() %}
                 {% if p %}
                     {% if p != pagination.page %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('ver_prestamos', page=p) }}">{{ p }}</a></li>
+                        <li class="page-item"><a class="page-link" href="{{ url_for('biblioteca', page=p) }}">{{ p }}</a></li>
                     {% else %}
                         <li class="page-item active"><span class="page-link">{{ p }}</span></li>
                     {% endif %}
