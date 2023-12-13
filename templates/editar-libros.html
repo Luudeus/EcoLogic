@@ -151,9 +151,10 @@ Editar Libros
             deleteButton.textContent = 'Eliminar';
             deleteButton.classList.add('btn', 'btn-danger');
             deleteButton.onclick = function() {
-                confirmDelete(user.id_book);
+                confirmDelete(book.id_book);
             };
             actionsCell.appendChild(deleteButton);
+            
         });
     }
 

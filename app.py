@@ -464,6 +464,8 @@ def delete_book():
 
     # Delete the book by book id
     try:
+        cursor.execute("DELETE FROM Solicitud WHERE id_book = %s", (book_id,))
+        cursor.execute("DELETE FROM Lending WHERE id_book = %s", (book_id,))
         cursor.execute("DELETE FROM Book WHERE id_book = %s", (book_id,))
         mysql.connection.commit()
     except Exception as e:
@@ -725,6 +727,8 @@ def delete_user():
 
     # Delete the user by RUT
     try:
+        cursor.execute("DELETE FROM Solicitud WHERE RUT_User = %s", (user_rut,))
+        cursor.execute("DELETE FROM Lending WHERE RUT_User = %s", (user_rut,))
         cursor.execute("DELETE FROM User WHERE RUT = %s", (user_rut,))
         mysql.connection.commit()
     except Exception as e:
