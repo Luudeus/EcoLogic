@@ -1111,6 +1111,39 @@ def mis_prestamos():
 def solicitar_prestamo():
     return search_books("solicitar-prestamo")
 
-      
+
+@app.route("/request-book", methods=["GET"])
+@login_required
+def request_book():
+    # Get the book id from the query parameter
+    user_rut = session['user_id']
+    book_id = request.args.get("id")
+    titulo = request.args.get("title")
+    if not book_id:
+        flash("No se proporcionó la ID del libro", "warning")
+        return redirect(url_for("solicitar_prestamo"))
+    
+    # Get current date
+    current_date = datetime.now()
+
+    # Format date, YYYY-MM-DD
+    formatted_date = current_date.strftime("%Y-%m-%d")
+
+    # Connect to the database
+    cursor = mysql.connection.cursor()
+
+    # Insert the request
+    try:
+        cursor.execute("INSERT INTO Solicitud (RUT_User, id_book, titulo_libro, fecha_solicitud) VALUES (%s, %s, %s, %s)", (user_rut, book_id, titulo, formatted_date))
+        mysql.connection.commit()
+    except Exception as e:
+        print("No se pudo enviar la solicitud de préstamo:", e)
+        flash("No se pudo enviar la solicitud de préstamo", "warning")
+        return render_template("solicitar-prestamo.html")
+    cursor.close()
+
+    flash(f"Se envió la solicitud de préstamo: RUT: {rut_format(user_rut)} ID Libro: {book_id} Título: {titulo}", "success")
+    return redirect(url_for("solicitar_prestamo"))    
+  
 if __name__ == "__main__":
     app.run(debug=True)

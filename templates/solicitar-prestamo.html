@@ -145,7 +145,7 @@ Solicitar Préstamo
             requestBook.textContent = 'Solicitar Préstamo';
             requestBook.classList.add('btn', 'btn-success');
             requestBook.onclick = function() {
-                requestBookConfirmation(book.id_book);
+                requestBookConfirmation(book.id_book, book.titulo);
             };
             actionsCell.appendChild(requestBook);
             
@@ -243,10 +243,13 @@ Solicitar Préstamo
         });
     }
 
-    function requestBookConfirmation(bookId) {
-        var confirmation = confirm(`¿Deseas solicitar el libro ID: ${bookId}?`);
+    function requestBookConfirmation(bookId, bookTitle) {
+        var confirmation = confirm(`¿Deseas solicitar el libro ${bookTitle} ID: ${bookId}?`);
         if (confirmation) {
-            window.location.href = `/request-book?id=${bookId}`;
+            // Codifica bookTitle para que sea seguro incluirlo en una URL
+        var encodedBookTitle = encodeURIComponent(bookTitle);
+        // Construye la URL con bookId y bookTitle como parámetros
+        window.location.href = `/request-book?id=${bookId}&title=${encodedBookTitle}`;
         }
     }
     

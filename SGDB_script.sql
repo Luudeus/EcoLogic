@@ -34,7 +34,6 @@ CREATE TABLE Solicitud (
     id_book INT NOT NULL,
     titulo_libro VARCHAR(255) NOT NULL,
     fecha_solicitud DATE,
-    estado VARCHAR(50),
     FOREIGN KEY (RUT_User) REFERENCES User(RUT),
     FOREIGN KEY (id_book) REFERENCES Book(id_book)
 );
