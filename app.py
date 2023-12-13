@@ -227,7 +227,7 @@ def register():
         # Get form data
         rut = request.form.get("rut")
         name = request.form.get("name")
-        mail = request.form.get("mail")
+        mail = request.form.get("email")
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
 
