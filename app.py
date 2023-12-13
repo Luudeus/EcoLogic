@@ -1151,7 +1151,7 @@ def request_book():
 def ver_prestamos():
     # Retrieve query parameters for search, ordering, and pagination
     search_term = request.args.get("search", default="")
-    order = request.args.get("o", default="id_book")
+    order = request.args.get("o", default="solicitud_id")
     direction = request.args.get("d", default="ASC").upper()
     page = request.args.get("page", 1, type=int)
     per_page = 10  # Limit of items per page
@@ -1160,7 +1160,7 @@ def ver_prestamos():
     cursor = mysql.connection.cursor()
 
     # Start building the SQL query
-    base_query = "SELECT * FROM Book"
+    base_query = "SELECT * FROM Solicitud"
     where_clause = ""
     order_clause = ""
 
@@ -1213,5 +1213,7 @@ def ver_prestamos():
 
     # Render the template with the fetched books and pagination data
     return render_template(f"{template_name}.html", books=books, pagination=pagination)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
