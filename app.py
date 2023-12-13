@@ -1146,9 +1146,9 @@ def request_book():
     return redirect(url_for("solicitar_prestamo"))    
 
 
-@app.route("/ver-prestamos", methods=["GET"])
+@app.route("/ver-solicitudes", methods=["GET"])
 @admin_required
-def ver_prestamos():
+def ver_solicitudes():
     # Retrieve query parameters for search, ordering, and pagination
     search_term = request.args.get("search", default="")
     order = request.args.get("o", default="solicitud_id")
@@ -1176,43 +1176,47 @@ def ver_prestamos():
     # Pagination clause
     pagination_clause = f" LIMIT {per_page} OFFSET {(page - 1) * per_page}"
 
-    # Complete SQL query for books
+    # Complete SQL query for solicituds
     query = f"{base_query}{where_clause}{order_clause}{pagination_clause}"
 
     # Execute the query with parameters if needed
     try:
         if search_term:
-            cursor.execute(query, (f"%{search_term}%", "%{search_term}%"))
+            cursor.execute(query, (f"%{search_term}%", f"%{search_term}%"))
         else:
             cursor.execute(query)
     except Exception as e:
         print("Error during query execution:", e)
 
     # Fetch the results
-    requests = cursor.fetchall()
+    solicituds = cursor.fetchall()
+    
+    # Format dates
+    for solicitud in solicituds:
+        solicitud["fecha_solicitud"] = solicitud["fecha_solicitud"].strftime("%d-%m-%Y")
 
-    # Query for total count of requests (for pagination)
+    # Query for total count of solicituds (for pagination)
     count_query = "SELECT COUNT(*) FROM Solicitud" + where_clause
-    cursor.execute(count_query, (f"%{search_term}%", "%{search_term}%") if search_term else ())
+    cursor.execute(count_query, (f"%{search_term}%", f"%{search_term}%") if search_term else ())
     result = cursor.fetchone()
-    total_b = result["COUNT(*)"] if result else 0
+    total_solicituds = result["COUNT(*)"] if result else 0
 
     # Calculate total pages
-    total_pages = (total_books + per_page - 1) // per_page
+    total_pages = (total_solicituds + per_page - 1) // per_page
 
     cursor.close()
 
-    # Check if the request is an AJAX request
+    # Check if the solicitud is an AJAX solicitud
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify(
-            {"books": books, "total_pages": total_pages, "current_page": page}
+            {"solicituds": solicituds, "total_pages": total_pages, "current_page": page}
         )
 
     # Create a Pagination object
-    pagination = Pagination(page=page, per_page=per_page, total_count=total_books)
+    pagination = Pagination(page=page, per_page=per_page, total_count=total_solicituds)
 
-    # Render the template with the fetched books and pagination data
-    return render_template(f"{template_name}.html", books=books, pagination=pagination)
+    # Render the template with the fetched solicituds and pagination data
+    return render_template("ver-solicitudes.html", solicituds=solicituds, pagination=pagination)
 
 
 if __name__ == "__main__":
